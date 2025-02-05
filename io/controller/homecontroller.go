@@ -16,7 +16,7 @@ func NewHomeController(logger *slog.Logger) *HomeController {
 	}
 }
 
-func (c *HomeController) Index(w http.ResponseWriter, req *http.Request) {
+func (c *HomeController) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(w, "hello 6\n")
 	c.logger.Info("hello again 6", "key", "val", "age", 25)
 }

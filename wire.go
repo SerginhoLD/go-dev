@@ -19,6 +19,15 @@ func InitializeHomeController() *controller.HomeController {
 	return &controller.HomeController{}
 }
 
+func InitializeHeadersController() *controller.HeadersController {
+	wire.Build(
+		InitializeLogger,
+		controller.NewHeadersController,
+	)
+
+	return &controller.HeadersController{}
+}
+
 func InitializeLogger() *slog.Logger {
 	return slog.New(slog.NewJSONHandler(os.Stderr, nil))
 }
