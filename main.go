@@ -5,8 +5,10 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/hello", InitializeHomeController().ServeHTTP)
-	http.HandleFunc("/headers", InitializeHeadersController().ServeHTTP)
+	app := InitializeApp()
+
+	http.HandleFunc("/hello", app.homeController.ServeHTTP)
+	http.HandleFunc("/headers", app.headersController.ServeHTTP)
 
 	http.ListenAndServe(":8080", nil)
 }

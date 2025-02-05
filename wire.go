@@ -10,22 +10,30 @@ import (
 	"os"
 )
 
-func InitializeHomeController() *controller.HomeController {
-	wire.Build(
-		InitializeLogger,
-		controller.NewHomeController,
-	)
-
-	return &controller.HomeController{}
+type App struct {
+	homeController    *controller.HomeController
+	headersController *controller.HeadersController
 }
 
-func InitializeHeadersController() *controller.HeadersController {
+func NewApp(
+	homeController *controller.HomeController,
+	headersController *controller.HeadersController,
+) *App {
+	return &App{
+		homeController,
+		headersController,
+	}
+}
+
+func InitializeApp() *App {
 	wire.Build(
+		NewApp,
 		InitializeLogger,
+		controller.NewHomeController,
 		controller.NewHeadersController,
 	)
 
-	return &controller.HeadersController{}
+	return &App{}
 }
 
 func InitializeLogger() *slog.Logger {
