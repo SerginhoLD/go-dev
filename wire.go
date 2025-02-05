@@ -4,6 +4,7 @@
 package main
 
 import (
+	"example.com/m/domain/eventdispatcher"
 	"example.com/m/io/controller"
 	"github.com/google/wire"
 	"log/slog"
@@ -29,6 +30,7 @@ func InitializeApp() *App {
 	wire.Build(
 		NewApp,
 		InitializeLogger,
+		eventdispatcher.NewEventDispatcher,
 		controller.NewHomeController,
 		controller.NewHeadersController,
 	)
