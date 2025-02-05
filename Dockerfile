@@ -1,5 +1,7 @@
 FROM golang:1.23.6-alpine3.21
 
+RUN go install github.com/google/wire/cmd/wire@latest
+
 WORKDIR /usr/src/app
 
 # pre-copy/cache go.mod for pre-downloading dependencies and only redownloading them in subsequent builds if they change
@@ -7,7 +9,7 @@ WORKDIR /usr/src/app
 #RUN go mod download && go mod verify
 
 COPY . .
-RUN go build -o main
+RUN wire && go build -o main
 
 CMD ["./main"]
 EXPOSE 8080
