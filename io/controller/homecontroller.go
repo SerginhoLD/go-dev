@@ -9,12 +9,12 @@ import (
 
 type HomeController struct {
 	logger          *slog.Logger
-	eventDispatcher *eventdispatcher.EventDispatcher
+	eventDispatcher eventdispatcher.EventDispatcher
 }
 
 func NewHomeController(
 	logger *slog.Logger,
-	eventDispatcher *eventdispatcher.EventDispatcher,
+	eventDispatcher eventdispatcher.EventDispatcher,
 ) *HomeController {
 	return &HomeController{
 		logger:          logger,
