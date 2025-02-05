@@ -1,16 +1,16 @@
 package gookiteventdispatcher
 
 import (
+	"example.com/m/infrastructure/logger"
 	"github.com/gookit/event"
-	"log/slog"
 )
 
 type GookitEventDispatcher struct {
-	logger *slog.Logger
+	logListener *logger.LogListener
 }
 
-func New(logger *slog.Logger) *GookitEventDispatcher {
-	d := &GookitEventDispatcher{logger: logger}
+func New(logListener *logger.LogListener) *GookitEventDispatcher {
+	d := &GookitEventDispatcher{logListener}
 	d.init()
 	return d
 }
@@ -26,9 +26,8 @@ func (d *GookitEventDispatcher) listen(name string, callback func(map[string]any
 	}), priority...)
 }
 
-// todo
 func (d *GookitEventDispatcher) init() {
 	d.listen("Event1", func(data map[string]any) {
-		d.logger.Info("ff8 Event1", "arg0", data["arg0"])
+		d.logListener.OnEvent1(data)
 	})
 }

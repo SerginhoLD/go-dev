@@ -6,10 +6,9 @@ package main
 import (
 	"example.com/m/domain/eventdispatcher"
 	"example.com/m/infrastructure/gookiteventdispatcher"
+	"example.com/m/infrastructure/logger"
 	"example.com/m/io/controller"
 	"github.com/google/wire"
-	"log/slog"
-	"os"
 )
 
 type App struct {
@@ -30,7 +29,8 @@ func NewApp(
 func InitializeApp() *App {
 	wire.Build(
 		NewApp,
-		InitializeLogger,
+		logger.NewLogger,
+		logger.NewLogListener,
 		gookiteventdispatcher.New,
 		wire.Bind(new(eventdispatcher.EventDispatcher), new(*gookiteventdispatcher.GookitEventDispatcher)),
 		controller.NewHomeController,
@@ -38,8 +38,4 @@ func InitializeApp() *App {
 	)
 
 	return &App{}
-}
-
-func InitializeLogger() *slog.Logger {
-	return slog.New(slog.NewJSONHandler(os.Stderr, nil))
 }
