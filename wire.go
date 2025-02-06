@@ -9,6 +9,7 @@ import (
 	"example.com/m/infrastructure/logger"
 	"example.com/m/io/controller"
 	"github.com/google/wire"
+	"net/http"
 )
 
 type App struct {
@@ -24,6 +25,13 @@ func NewApp(
 		homeController,
 		headersController,
 	}
+}
+
+func (app *App) Run() {
+	http.HandleFunc("/hello", app.homeController.ServeHTTP)
+	http.HandleFunc("/headers", app.headersController.ServeHTTP)
+
+	http.ListenAndServe(":8080", nil)
 }
 
 func InitializeApp() *App {
