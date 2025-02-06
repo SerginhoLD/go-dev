@@ -1,6 +1,9 @@
 package logger
 
-import "log/slog"
+import (
+	"example.com/m/domain/event"
+	"log/slog"
+)
 
 type LogListener struct {
 	logger *slog.Logger
@@ -10,6 +13,6 @@ func NewLogListener(logger *slog.Logger) *LogListener {
 	return &LogListener{logger}
 }
 
-func (l *LogListener) OnEvent1(data map[string]any) {
-	l.logger.Info("ff9 Event1", "arg0", data["arg0"])
+func (l *LogListener) OnEvent1(event *event.TestEvent) {
+	l.logger.Info("ff0 Event1", "v", event.Value)
 }

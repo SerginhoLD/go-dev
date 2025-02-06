@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"example.com/m/domain/event"
 	"example.com/m/domain/eventdispatcher"
 	"fmt"
 	"net/http"
@@ -19,6 +20,6 @@ func NewHomeController(
 }
 
 func (c *HomeController) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	fmt.Fprintf(w, "hello 6\n")
-	c.eventDispatcher.Dispatch("Event1", map[string]any{"arg0": "val0"}) // todo: struct
+	fmt.Fprintf(w, "hello 7\n")
+	c.eventDispatcher.Dispatch(&event.TestEvent{Value: "h"})
 }
