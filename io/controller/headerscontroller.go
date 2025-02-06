@@ -20,4 +20,19 @@ func (c *HeadersController) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 			fmt.Fprintf(w, "%v: %v\n", name, h)
 		}
 	}
+
+	rows, err := c.db.Query("select version()")
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer rows.Close()
+
+	rows.Next()
+
+	var version string
+	rows.Scan(&version)
+
+	fmt.Fprintf(w, "db test: %v\n", version)
 }

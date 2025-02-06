@@ -3,17 +3,18 @@ package postgres
 import (
 	"database/sql"
 	_ "github.com/lib/pq"
+	"os"
 )
 
 func NewDB() *sql.DB {
-	dsnStr := "user=postgres password=root dbname=postgres sslmode=disable"
-	db, err := sql.Open("postgres", dsnStr)
+	dsn, _ := os.LookupEnv("DB_DSN")
+	db, err := sql.Open("postgres", dsn)
 
 	if err != nil {
 		panic(err)
 	}
 
-	defer db.Close()
+	//defer db.Close()
 
 	return db
 }
