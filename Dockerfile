@@ -1,6 +1,8 @@
 FROM golang:1.23.6-alpine3.21
 
-RUN go install github.com/google/wire/cmd/wire@latest
+RUN apk add --no-cache make \
+    && go install github.com/google/wire/cmd/wire@latest \
+    && go install github.com/pressly/goose/v3/cmd/goose@latest
 
 WORKDIR /usr/src/app
 

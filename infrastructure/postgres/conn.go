@@ -7,7 +7,7 @@ import (
 )
 
 func NewDB() *sql.DB {
-	dsn, _ := os.LookupEnv("DB_DSN")
+	dsn, _ := os.LookupEnv("GOOSE_DBSTRING")
 	db, err := sql.Open("postgres", dsn)
 
 	if err != nil {
