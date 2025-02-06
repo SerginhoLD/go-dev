@@ -1,17 +1,17 @@
 package controller
 
 import (
+	"database/sql"
 	"fmt"
-	"log/slog"
 	"net/http"
 )
 
 type HeadersController struct {
-	logger *slog.Logger
+	db *sql.DB
 }
 
-func NewHeadersController(logger *slog.Logger) *HeadersController {
-	return &HeadersController{logger}
+func NewHeadersController(db *sql.DB) *HeadersController {
+	return &HeadersController{db}
 }
 
 func (c *HeadersController) ServeHTTP(w http.ResponseWriter, req *http.Request) {

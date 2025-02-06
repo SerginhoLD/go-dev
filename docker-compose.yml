@@ -1,6 +1,6 @@
 services:
   app:
-    container_name: go-dev
+    container_name: go-dev-app
     restart: unless-stopped
     build:
       context: .
@@ -8,13 +8,18 @@ services:
       - "127.0.0.90:80:8080"
     environment:
       PS1: "\\u:\\w$$ "
-      #PHP_INI_SCAN_DIR: "/usr/local/etc/php/conf.d_ext:/usr/local/etc/php/conf.d"
-      #PHP_IDE_CONFIG: "serverName=127.0.0.7"
-    #volumes:
-    #  - ./docker/php/conf.d:/usr/local/etc/php/conf.d_ext
-    #  - ./:/var/www
-    #depends_on:
-    #  - database
-    #  - redis
-      #- manticore
-    #  - mailer
+
+  postgres:
+    container_name: go-dev-db
+    restart: unless-stopped
+    image: postgres:17.2-alpine3.21
+    ports:
+      - "127.0.0.90:5432:5432"
+    environment:
+      POSTGRES_PASSWORD: root
+    volumes:
+      - go-dev-postgres17:/var/lib/postgresql/data
+
+volumes:
+  go-dev-postgres17:
+    name: go-dev-postgres17

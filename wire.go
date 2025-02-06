@@ -7,6 +7,7 @@ import (
 	"example.com/m/domain/eventdispatcher"
 	eventdispatcherimpl "example.com/m/infrastructure/eventdispatcher"
 	"example.com/m/infrastructure/logger"
+	"example.com/m/infrastructure/postgres"
 	"example.com/m/io/controller"
 	"github.com/google/wire"
 	"net/http"
@@ -39,6 +40,7 @@ func InitializeApp() *App {
 		NewApp,
 		logger.NewLogger,
 		logger.NewLogListener,
+		postgres.NewDB,
 		eventdispatcherimpl.New,
 		wire.Bind(new(eventdispatcher.EventDispatcher), new(*eventdispatcherimpl.EventDispatcherImpl)),
 		controller.NewHomeController,
