@@ -21,18 +21,12 @@ func (c *HeadersController) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 		}
 	}
 
-	rows, err := c.db.Query("select version()")
+	var version string
+	err := c.db.QueryRow("select name from products where id = $1 and id = $1", 1).Scan(&version)
 
 	if err != nil {
 		panic(err)
 	}
-
-	defer rows.Close()
-
-	rows.Next()
-
-	var version string
-	rows.Scan(&version)
 
 	fmt.Fprintf(w, "db test: %v\n", version)
 }
