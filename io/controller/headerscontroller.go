@@ -1,18 +1,17 @@
 package controller
 
 import (
-	"database/sql"
-	"errors"
+	"exampleapp/domain/repository"
 	"fmt"
 	"net/http"
 )
 
 type HeadersController struct {
-	db *sql.DB
+	repository repository.ProductRepository
 }
 
-func NewHeadersController(db *sql.DB) *HeadersController {
-	return &HeadersController{db}
+func NewHeadersController(repository repository.ProductRepository) *HeadersController {
+	return &HeadersController{repository}
 }
 
 func (c *HeadersController) ServeHTTP(w http.ResponseWriter, req *http.Request) {
@@ -22,15 +21,12 @@ func (c *HeadersController) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 		}
 	}
 
-	var version string
-	err := c.db.QueryRow("select name from products where id = $1 and id = $1", 1).Scan(&version)
+	p := c.repository.Find(11)
 
 	switch {
-	case errors.Is(err, sql.ErrNoRows):
-		version = "not found"
-	case err != nil:
-		panic(err)
+	case p != nil:
+		fmt.Fprintf(w, "db test: %v\n", p.Name)
+	default:
+		fmt.Fprintf(w, "db test: ---\n")
 	}
-
-	fmt.Fprintf(w, "db test: %v\n", version)
 }

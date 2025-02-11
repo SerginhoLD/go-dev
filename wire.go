@@ -5,9 +5,11 @@ package main
 
 import (
 	"exampleapp/domain/eventdispatcher"
+	"exampleapp/domain/repository"
 	eventdispatcherimpl "exampleapp/infrastructure/eventdispatcher"
 	"exampleapp/infrastructure/logger"
 	"exampleapp/infrastructure/postgres"
+	repositoryimpl "exampleapp/infrastructure/repository"
 	"exampleapp/io/controller"
 	"github.com/google/wire"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -47,6 +49,8 @@ func InitializeApp() *App {
 		postgres.NewDB,
 		eventdispatcherimpl.New,
 		wire.Bind(new(eventdispatcher.EventDispatcher), new(*eventdispatcherimpl.EventDispatcherImpl)),
+		repositoryimpl.NewProductRepositoryImpl,
+		wire.Bind(new(repository.ProductRepository), new(*repositoryimpl.ProductRepositoryImpl)),
 		controller.NewHomeController,
 		controller.NewHeadersController,
 	)
