@@ -13,28 +13,34 @@ type EventDispatcherImpl struct {
 }
 
 func New(logListener *logger.LogListener, metricListener *logger.MetricListener) *EventDispatcherImpl {
-	d := &EventDispatcherImpl{logListener, metricListener}
-	return d
+	return &EventDispatcherImpl{logListener, metricListener}
 }
 
-func (d *EventDispatcherImpl) Dispatch(event interface{}) {
-	var callbacks []func(interface{})
+func (d *EventDispatcherImpl) Dispatch(event interface{}) error {
+	var callbacks []func(interface{}) error
 
 	switch e := event.(type) {
 	case *domainevent.TestEvent:
-		callbacks = append(callbacks, func(interface{}) { d.logListener.OnEvent1(e) })
-		callbacks = append(callbacks, func(interface{}) { d.metricListener.OnEvent2(e) })
+		callbacks = append(callbacks, func(interface{}) error { return d.logListener.OnEvent1(e) })
+		callbacks = append(callbacks, func(interface{}) error { d.metricListener.OnEvent2(e); return nil })
 	default:
-		panic(fmt.Sprintf("unhandled type %T", event))
+		d.logListener.OnUnhandledEvent(e)
+		panic(fmt.Sprintf("Unhandled event \"%T\"", event))
 	}
 
 	for _, callback := range callbacks {
-		callback(event)
+		err := callback(event)
+
+		if err != nil {
+			return err
+		}
 
 		if stoppableEvent, ok := event.(eventdispatcher.StoppableEvent); ok {
 			if stoppableEvent.IsPropagationStopped() {
-				return
+				return nil
 			}
 		}
 	}
+
+	return nil
 }
