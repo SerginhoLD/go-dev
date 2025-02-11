@@ -40,6 +40,7 @@ func InitializeApp() *App {
 		NewApp,
 		logger.NewLogger,
 		logger.NewLogListener,
+		logger.NewMetricListener,
 		postgres.NewDB,
 		eventdispatcherimpl.New,
 		wire.Bind(new(eventdispatcher.EventDispatcher), new(*eventdispatcherimpl.EventDispatcherImpl)),
