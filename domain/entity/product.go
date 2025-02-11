@@ -8,5 +8,5 @@ type Product struct {
 
 type ProductCollection struct {
 	Total    uint64
-	Products []Product
+	Products []*Product
 }

@@ -33,7 +33,7 @@ func NewApp(
 }
 
 func (app *App) Run() {
-	http.HandleFunc("/hello", app.homeController.ServeHTTP)
+	http.HandleFunc("/", app.homeController.ServeHTTP)
 	http.HandleFunc("/product/{id}", app.getProductController.ServeHTTP)
 
 	http.Handle("/metrics", promhttp.Handler())
@@ -52,6 +52,7 @@ func InitializeApp() *App {
 		wire.Bind(new(eventdispatcher.EventDispatcher), new(*eventdispatcherimpl.EventDispatcherImpl)),
 		repositoryimpl.NewProductRepositoryImpl,
 		wire.Bind(new(repository.ProductRepository), new(*repositoryimpl.ProductRepositoryImpl)),
+		usecase.NewAllProductsUseCase,
 		controller.NewHomeController,
 		usecase.NewGetProductUseCase,
 		controller.NewGetProductController,

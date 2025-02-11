@@ -1,25 +1,24 @@
 package controller
 
 import (
-	"exampleapp/domain/event"
-	"exampleapp/domain/eventdispatcher"
-	"fmt"
+	"encoding/json"
+	"exampleapp/domain/usecase"
 	"net/http"
 )
 
 type HomeController struct {
-	eventDispatcher eventdispatcher.EventDispatcher
+	useCase *usecase.AllProductsUseCase
 }
 
-func NewHomeController(
-	eventDispatcher eventdispatcher.EventDispatcher,
-) *HomeController {
-	return &HomeController{
-		eventDispatcher: eventDispatcher,
-	}
+func NewHomeController(useCase *usecase.AllProductsUseCase) *HomeController {
+	return &HomeController{useCase}
 }
 
 func (c *HomeController) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	fmt.Fprintf(w, "hello 7\n")
-	c.eventDispatcher.Dispatch(&event.TestEvent{Value: "h"})
+	w.Header().Set("Content-Type", "application/json")
+
+	models := c.useCase.Handle()
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(models)
 }
