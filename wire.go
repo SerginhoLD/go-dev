@@ -10,6 +10,7 @@ import (
 	"exampleapp/infrastructure/postgres"
 	"exampleapp/io/controller"
 	"github.com/google/wire"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"net/http"
 )
 
@@ -31,6 +32,8 @@ func NewApp(
 func (app *App) Run() {
 	http.HandleFunc("/hello", app.homeController.ServeHTTP)
 	http.HandleFunc("/headers", app.headersController.ServeHTTP)
+
+	http.Handle("/metrics", promhttp.Handler())
 
 	http.ListenAndServe(":8080", nil)
 }

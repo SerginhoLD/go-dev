@@ -18,7 +18,7 @@ func (l *LogListener) OnUnhandledEvent(event interface{}) {
 	l.logger.Error(fmt.Sprintf("Unhandled event \"%T\"", event))
 }
 
-func (l *LogListener) OnEvent1(event *event.TestEvent) error {
+func (l *LogListener) OnTestEvent(event *event.TestEvent) error {
 	l.logger.Info("ff0 Event1", "v", event.Value)
 	return nil
 }

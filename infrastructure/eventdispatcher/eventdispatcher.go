@@ -21,8 +21,8 @@ func (d *EventDispatcherImpl) Dispatch(event interface{}) error {
 
 	switch e := event.(type) {
 	case *domainevent.TestEvent:
-		callbacks = append(callbacks, func(interface{}) error { return d.logListener.OnEvent1(e) })
-		callbacks = append(callbacks, func(interface{}) error { d.metricListener.OnEvent2(e); return nil })
+		callbacks = append(callbacks, func(interface{}) error { return d.logListener.OnTestEvent(e) })
+		callbacks = append(callbacks, func(interface{}) error { d.metricListener.OnTestEvent(e); return nil })
 	default:
 		d.logListener.OnUnhandledEvent(e)
 		panic(fmt.Sprintf("Unhandled event \"%T\"", event))
