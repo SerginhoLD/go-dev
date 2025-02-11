@@ -1,8 +1,8 @@
 package controller
 
 import (
+	"encoding/json"
 	"exampleapp/domain/usecase"
-	"fmt"
 	"net/http"
 )
 
@@ -15,18 +15,15 @@ func NewHeadersController(useCase *usecase.GetProductUseCase) *HeadersController
 }
 
 func (c *HeadersController) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	for name, headers := range req.Header {
-		for _, h := range headers {
-			fmt.Fprintf(w, "%v: %v\n", name, h)
-		}
-	}
+	w.Header().Set("Content-Type", "application/json")
 
 	p := c.useCase.Handle(usecase.GetProductQuery{2})
 
 	switch {
 	case p != nil:
-		fmt.Fprintf(w, "db test: %v\n", p.Name)
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(p)
 	default:
-		fmt.Fprintf(w, "db test: ---\n")
+		w.WriteHeader(http.StatusNotFound)
 	}
 }

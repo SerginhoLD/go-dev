@@ -31,7 +31,7 @@ func (u *GetProductUseCase) Handle(query GetProductQuery) *GetProductViewModel {
 }
 
 type GetProductViewModel struct {
-	Id    uint64
-	Name  string
-	Price float64
+	Id    uint64  `json:"id"`
+	Name  string  `json:"name"`
+	Price float64 `json:"price"`
 }
