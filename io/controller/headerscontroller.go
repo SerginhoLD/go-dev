@@ -4,26 +4,35 @@ import (
 	"encoding/json"
 	"exampleapp/domain/usecase"
 	"net/http"
+	"strconv"
 )
 
-type HeadersController struct {
+type GetProductController struct {
 	useCase *usecase.GetProductUseCase
 }
 
-func NewHeadersController(useCase *usecase.GetProductUseCase) *HeadersController {
-	return &HeadersController{useCase}
+func NewGetProductController(useCase *usecase.GetProductUseCase) *GetProductController {
+	return &GetProductController{useCase}
 }
 
-func (c *HeadersController) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+func (c *GetProductController) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Abc", req.PathValue("id"))
 
-	p := c.useCase.Handle(usecase.GetProductQuery{2})
+	id, err := strconv.ParseUint(req.PathValue("id"), 10, 64)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	p := c.useCase.Handle(usecase.GetProductQuery{id})
 
 	switch {
 	case p != nil:
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(p)
 	default:
-		w.WriteHeader(http.StatusNotFound)
+		http.Error(w, "Product not found", http.StatusNotFound)
 	}
 }

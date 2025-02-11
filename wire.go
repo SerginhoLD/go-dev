@@ -18,23 +18,23 @@ import (
 )
 
 type App struct {
-	homeController    *controller.HomeController
-	headersController *controller.HeadersController
+	homeController       *controller.HomeController
+	getProductController *controller.GetProductController
 }
 
 func NewApp(
 	homeController *controller.HomeController,
-	headersController *controller.HeadersController,
+	getProductController *controller.GetProductController,
 ) *App {
 	return &App{
 		homeController,
-		headersController,
+		getProductController,
 	}
 }
 
 func (app *App) Run() {
 	http.HandleFunc("/hello", app.homeController.ServeHTTP)
-	http.HandleFunc("/headers", app.headersController.ServeHTTP)
+	http.HandleFunc("/product/{id}", app.getProductController.ServeHTTP)
 
 	http.Handle("/metrics", promhttp.Handler())
 
@@ -53,8 +53,8 @@ func InitializeApp() *App {
 		repositoryimpl.NewProductRepositoryImpl,
 		wire.Bind(new(repository.ProductRepository), new(*repositoryimpl.ProductRepositoryImpl)),
 		controller.NewHomeController,
-		usecase.NewProductUseCase,
-		controller.NewHeadersController,
+		usecase.NewGetProductUseCase,
+		controller.NewGetProductController,
 	)
 
 	return &App{}
