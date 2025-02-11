@@ -10,16 +10,29 @@ type MetricListener struct {
 }
 
 func NewMetricListener() *MetricListener {
-	metrics := make(map[string]prometheus.Collector)
+	l := &MetricListener{make(map[string]prometheus.Collector)}
 
-	metrics["app_test_counter"] = prometheus.NewCounter(prometheus.CounterOpts{
+	l.addCounter(prometheus.CounterOpts{
 		Name: "app_test_counter",
 		//Help: "An example counter metric",
 	})
 
-	prometheus.MustRegister(metrics["app_test_counter"])
+	return l
+}
 
-	return &MetricListener{metrics}
+func (l *MetricListener) addCounter(opts prometheus.CounterOpts) {
+	l.metrics[opts.Name] = prometheus.NewCounter(opts)
+	prometheus.MustRegister(l.metrics[opts.Name])
+}
+
+func (l *MetricListener) addGauge(opts prometheus.GaugeOpts) {
+	l.metrics[opts.Name] = prometheus.NewGauge(opts)
+	prometheus.MustRegister(l.metrics[opts.Name])
+}
+
+func (l *MetricListener) addHistogram(opts prometheus.HistogramOpts) {
+	l.metrics[opts.Name] = prometheus.NewHistogram(opts)
+	prometheus.MustRegister(l.metrics[opts.Name])
 }
 
 func (l *MetricListener) OnTestEvent(event *event.TestEvent) {
