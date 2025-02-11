@@ -21,5 +21,5 @@ func NewHomeController(
 
 func (c *HomeController) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(w, "hello 7\n")
-	c.eventDispatcher.Dispatch(&event.TestEvent{Value: "stopped"})
+	c.eventDispatcher.Dispatch(&event.TestEvent{Value: "h"})
 }
