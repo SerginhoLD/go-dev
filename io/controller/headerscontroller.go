@@ -1,17 +1,17 @@
 package controller
 
 import (
-	"exampleapp/domain/repository"
+	"exampleapp/domain/usecase"
 	"fmt"
 	"net/http"
 )
 
 type HeadersController struct {
-	repository repository.ProductRepository
+	useCase *usecase.GetProductUseCase
 }
 
-func NewHeadersController(repository repository.ProductRepository) *HeadersController {
-	return &HeadersController{repository}
+func NewHeadersController(useCase *usecase.GetProductUseCase) *HeadersController {
+	return &HeadersController{useCase}
 }
 
 func (c *HeadersController) ServeHTTP(w http.ResponseWriter, req *http.Request) {
@@ -21,7 +21,7 @@ func (c *HeadersController) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 		}
 	}
 
-	p := c.repository.Find(11)
+	p := c.useCase.Handle(usecase.GetProductQuery{2})
 
 	switch {
 	case p != nil:

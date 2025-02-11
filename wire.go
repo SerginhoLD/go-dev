@@ -6,6 +6,7 @@ package main
 import (
 	"exampleapp/domain/eventdispatcher"
 	"exampleapp/domain/repository"
+	"exampleapp/domain/usecase"
 	eventdispatcherimpl "exampleapp/infrastructure/eventdispatcher"
 	"exampleapp/infrastructure/logger"
 	"exampleapp/infrastructure/postgres"
@@ -52,6 +53,7 @@ func InitializeApp() *App {
 		repositoryimpl.NewProductRepositoryImpl,
 		wire.Bind(new(repository.ProductRepository), new(*repositoryimpl.ProductRepositoryImpl)),
 		controller.NewHomeController,
+		usecase.NewProductUseCase,
 		controller.NewHeadersController,
 	)
 
