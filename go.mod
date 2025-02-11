@@ -1,4 +1,4 @@
-module example.com/m
+module exampleapp
 
 go 1.23
 

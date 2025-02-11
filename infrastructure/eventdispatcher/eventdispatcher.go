@@ -1,8 +1,8 @@
 package eventdispatcher
 
 import (
-	domainevent "example.com/m/domain/event"
-	"example.com/m/infrastructure/logger"
+	domainevent "exampleapp/domain/event"
+	"exampleapp/infrastructure/logger"
 	"fmt"
 )
 

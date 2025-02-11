@@ -4,11 +4,11 @@
 package main
 
 import (
-	"example.com/m/domain/eventdispatcher"
-	eventdispatcherimpl "example.com/m/infrastructure/eventdispatcher"
-	"example.com/m/infrastructure/logger"
-	"example.com/m/infrastructure/postgres"
-	"example.com/m/io/controller"
+	"exampleapp/domain/eventdispatcher"
+	eventdispatcherimpl "exampleapp/infrastructure/eventdispatcher"
+	"exampleapp/infrastructure/logger"
+	"exampleapp/infrastructure/postgres"
+	"exampleapp/io/controller"
 	"github.com/google/wire"
 	"net/http"
 )

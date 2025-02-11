@@ -1,8 +1,8 @@
 package controller
 
 import (
-	"example.com/m/domain/event"
-	"example.com/m/domain/eventdispatcher"
+	"exampleapp/domain/event"
+	"exampleapp/domain/eventdispatcher"
 	"fmt"
 	"net/http"
 )

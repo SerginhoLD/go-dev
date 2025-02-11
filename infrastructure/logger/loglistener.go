@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"example.com/m/domain/event"
+	"exampleapp/domain/event"
 	"log/slog"
 )
 
