@@ -18,18 +18,16 @@ func New(logListener *logger.LogListener, metricListener *logger.MetricListener)
 }
 
 func (d *EventDispatcherImpl) Dispatch(event interface{}) {
+	var callbacks []func(interface{})
+
 	switch e := event.(type) {
 	case *domainevent.TestEvent:
-		d.dispatchCallbacks(e, []func(interface{}){
-			func(interface{}) { d.logListener.OnEvent1(e) },
-			func(interface{}) { d.metricListener.OnEvent2(e) },
-		})
+		callbacks = append(callbacks, func(interface{}) { d.logListener.OnEvent1(e) })
+		callbacks = append(callbacks, func(interface{}) { d.metricListener.OnEvent2(e) })
 	default:
 		panic(fmt.Sprintf("unhandled type %T", event))
 	}
-}
 
-func (d *EventDispatcherImpl) dispatchCallbacks(event interface{}, callbacks []func(interface{})) {
 	for _, callback := range callbacks {
 		callback(event)
 
