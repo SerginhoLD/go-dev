@@ -9,6 +9,9 @@ migrate: ## Migrate the DB to the most recent version available
 down-migration: ## Roll back the version by 1
 	@goose down
 
+dev-db-clean: ## Recreate dev database
+	@goose down-to 0
+	@goose up
 
 name := app
 
