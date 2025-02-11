@@ -2,6 +2,7 @@ package controller
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 )
@@ -24,7 +25,10 @@ func (c *HeadersController) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 	var version string
 	err := c.db.QueryRow("select name from products where id = $1 and id = $1", 1).Scan(&version)
 
-	if err != nil {
+	switch {
+	case errors.Is(err, sql.ErrNoRows):
+		version = "not found"
+	case err != nil:
 		panic(err)
 	}
 
