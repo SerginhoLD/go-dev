@@ -4,6 +4,7 @@ import (
 	domainevent "exampleapp/domain/event"
 	"exampleapp/domain/eventdispatcher"
 	"exampleapp/infrastructure/logger"
+	"exampleapp/infrastructure/postgres"
 	"fmt"
 )
 
@@ -25,6 +26,11 @@ func (d *EventDispatcherImpl) Dispatch(event interface{}) error {
 			callbacks,
 			func(interface{}) error { return d.logListener.OnTestEvent(e) },
 			func(interface{}) error { d.metricListener.OnTestEvent(e); return nil },
+		)
+	case *postgres.QueryEvent:
+		callbacks = append(
+			callbacks,
+			func(interface{}) error { d.logListener.OnSqlQuery(e); return nil },
 		)
 	default:
 		d.logListener.OnUnhandledEvent(e)

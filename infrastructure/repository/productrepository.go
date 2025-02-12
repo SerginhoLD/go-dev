@@ -4,20 +4,21 @@ import (
 	"database/sql"
 	"errors"
 	"exampleapp/domain/entity"
+	"exampleapp/infrastructure/postgres"
 	"fmt"
 )
 
 type ProductRepositoryImpl struct {
-	db *sql.DB
+	conn *postgres.Conn
 }
 
-func NewProductRepositoryImpl(db *sql.DB) *ProductRepositoryImpl {
-	return &ProductRepositoryImpl{db}
+func NewProductRepositoryImpl(conn *postgres.Conn) *ProductRepositoryImpl {
+	return &ProductRepositoryImpl{conn}
 }
 
 func (r *ProductRepositoryImpl) Find(id uint64) *entity.Product {
 	product := new(entity.Product)
-	err := r.db.QueryRow("select id, name, price from products where id = $1", id).Scan(&product.Id, &product.Name, &product.Price)
+	err := r.conn.QueryRow("select id, name, price from products where id = $1", id).Scan(&product.Id, &product.Name, &product.Price)
 
 	switch {
 	case errors.Is(err, sql.ErrNoRows):
@@ -31,7 +32,7 @@ func (r *ProductRepositoryImpl) Find(id uint64) *entity.Product {
 
 func (r *ProductRepositoryImpl) Paginate(page uint64, limit uint64) ([]*entity.Product, uint64) {
 	var total uint64
-	err := r.db.QueryRow("select count(*) from products").Scan(&total)
+	err := r.conn.QueryRow("select count(*) from products").Scan(&total)
 
 	if err != nil {
 		panic(err)
@@ -41,7 +42,7 @@ func (r *ProductRepositoryImpl) Paginate(page uint64, limit uint64) ([]*entity.P
 		return []*entity.Product{}, 0
 	}
 
-	rows, err := r.db.Query(fmt.Sprintf("SELECT id, name, price from products limit %d offset %d", limit, (page-1)*limit))
+	rows, err := r.conn.Query(fmt.Sprintf("SELECT id, name, price from products limit %d offset %d", limit, (page-1)*limit))
 
 	if err != nil {
 		panic(err)

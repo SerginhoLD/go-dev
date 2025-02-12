@@ -2,6 +2,7 @@ package logger
 
 import (
 	"exampleapp/domain/event"
+	"exampleapp/infrastructure/postgres"
 	"fmt"
 	"log/slog"
 )
@@ -16,6 +17,10 @@ func NewLogListener(logger *slog.Logger) *LogListener {
 
 func (l *LogListener) OnUnhandledEvent(event interface{}) {
 	l.logger.Error(fmt.Sprintf("Unhandled event \"%T\"", event))
+}
+
+func (l *LogListener) OnSqlQuery(event *postgres.QueryEvent) {
+	l.logger.Debug(event.Query)
 }
 
 func (l *LogListener) OnTestEvent(event *event.TestEvent) error {

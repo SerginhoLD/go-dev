@@ -18,12 +18,9 @@ func NewHomeController(useCase *usecase.PaginateProductsUseCase) *HomeController
 func (c *HomeController) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	page, err := strconv.ParseUint(req.URL.Query().Get("page"), 10, 64)
+	page, _ := strconv.ParseUint(req.URL.Query().Get("page"), 10, 64)
 
-	switch {
-	case err != nil:
-		page = 1
-	case page == 0:
+	if page == 0 {
 		page = 1
 	}
 
