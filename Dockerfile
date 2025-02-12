@@ -1,4 +1,4 @@
-FROM golang:1.23.6-alpine3.21
+FROM golang:1.24.0-alpine3.21
 
 RUN apk add --no-cache make \
     && go install github.com/google/wire/cmd/wire@latest \
