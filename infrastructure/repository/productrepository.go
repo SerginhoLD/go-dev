@@ -28,12 +28,16 @@ func (r *ProductRepositoryImpl) Find(id uint64) *entity.Product {
 	}
 }
 
-func (r *ProductRepositoryImpl) All() *entity.ProductCollection {
-	var count uint64
-	err := r.db.QueryRow("select count(*) from products").Scan(&count)
+func (r *ProductRepositoryImpl) All() ([]*entity.Product, uint64) {
+	var total uint64
+	err := r.db.QueryRow("select count(*) from products").Scan(&total)
 
 	if err != nil {
 		panic(err)
+	}
+
+	if total == 0 {
+		return []*entity.Product{}, 0
 	}
 
 	rows, err := r.db.Query("SELECT id, name, price from products")
@@ -44,7 +48,7 @@ func (r *ProductRepositoryImpl) All() *entity.ProductCollection {
 
 	defer rows.Close()
 
-	collection := &entity.ProductCollection{count, make([]*entity.Product, 0)}
+	var products []*entity.Product
 
 	for rows.Next() {
 		product := new(entity.Product)
@@ -53,8 +57,8 @@ func (r *ProductRepositoryImpl) All() *entity.ProductCollection {
 			panic(err)
 		}
 
-		collection.Products = append(collection.Products, product)
+		products = append(products, product)
 	}
 
-	return collection
+	return products, total
 }

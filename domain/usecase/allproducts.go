@@ -19,10 +19,10 @@ func NewAllProductsUseCase(
 }
 
 func (u *AllProductsUseCase) Handle() []*GetProductViewModel {
-	c := u.repository.All()
+	products, _ := u.repository.All()
 	models := make([]*GetProductViewModel, 0)
 
-	for _, p := range c.Products {
+	for _, p := range products {
 		models = append(models, &GetProductViewModel{
 			Id:    p.Id,
 			Name:  p.Name,

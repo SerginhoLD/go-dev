@@ -5,8 +5,3 @@ type Product struct {
 	Name  string
 	Price float64
 }
-
-type ProductCollection struct {
-	Total    uint64
-	Products []*Product
-}
