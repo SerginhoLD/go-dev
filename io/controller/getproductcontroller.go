@@ -17,7 +17,7 @@ func NewGetProductController(useCase *usecase.GetProductUseCase) *GetProductCont
 
 func (c *GetProductController) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Abc", req.PathValue("id"))
+	//w.Header().Set("X-Abc", req.PathValue("id"))
 
 	id, err := strconv.ParseUint(req.PathValue("id"), 10, 64)
 

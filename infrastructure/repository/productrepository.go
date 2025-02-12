@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"exampleapp/domain/entity"
+	"fmt"
 )
 
 type ProductRepositoryImpl struct {
@@ -28,7 +29,7 @@ func (r *ProductRepositoryImpl) Find(id uint64) *entity.Product {
 	}
 }
 
-func (r *ProductRepositoryImpl) All() ([]*entity.Product, uint64) {
+func (r *ProductRepositoryImpl) Paginate(page uint64, limit uint64) ([]*entity.Product, uint64) {
 	var total uint64
 	err := r.db.QueryRow("select count(*) from products").Scan(&total)
 
@@ -40,7 +41,7 @@ func (r *ProductRepositoryImpl) All() ([]*entity.Product, uint64) {
 		return []*entity.Product{}, 0
 	}
 
-	rows, err := r.db.Query("SELECT id, name, price from products")
+	rows, err := r.db.Query(fmt.Sprintf("SELECT id, name, price from products limit %d offset %d", limit, (page-1)*limit))
 
 	if err != nil {
 		panic(err)

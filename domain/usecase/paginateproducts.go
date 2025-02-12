@@ -6,20 +6,25 @@ import (
 	"exampleapp/domain/repository"
 )
 
-type AllProductsUseCase struct {
+type PaginateProductsQuery struct {
+	Page  uint64
+	Limit uint64
+}
+
+type PaginateProductsUseCase struct {
 	repository      repository.ProductRepository
 	eventDispatcher eventdispatcher.EventDispatcher
 }
 
-func NewAllProductsUseCase(
+func NewPaginateProductsUseCase(
 	repository repository.ProductRepository,
 	eventDispatcher eventdispatcher.EventDispatcher,
-) *AllProductsUseCase {
-	return &AllProductsUseCase{repository, eventDispatcher}
+) *PaginateProductsUseCase {
+	return &PaginateProductsUseCase{repository, eventDispatcher}
 }
 
-func (u *AllProductsUseCase) Handle() []*GetProductViewModel {
-	products, _ := u.repository.All()
+func (u *PaginateProductsUseCase) Handle(query PaginateProductsQuery) []*GetProductViewModel {
+	products, _ := u.repository.Paginate(query.Page, query.Limit)
 	models := make([]*GetProductViewModel, 0)
 
 	for _, p := range products {

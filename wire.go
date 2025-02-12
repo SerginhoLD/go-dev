@@ -52,7 +52,7 @@ func InitializeApp() *App {
 		wire.Bind(new(eventdispatcher.EventDispatcher), new(*eventdispatcherimpl.EventDispatcherImpl)),
 		repositoryimpl.NewProductRepositoryImpl,
 		wire.Bind(new(repository.ProductRepository), new(*repositoryimpl.ProductRepositoryImpl)),
-		usecase.NewAllProductsUseCase,
+		usecase.NewPaginateProductsUseCase,
 		controller.NewHomeController,
 		usecase.NewGetProductUseCase,
 		controller.NewGetProductController,
