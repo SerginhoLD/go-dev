@@ -19,6 +19,7 @@ import (
 func InitializeApp() *io.App {
 	wire.Build(
 		io.NewApp,
+		logger.NewHandler,
 		logger.NewLogger,
 		logger.NewLogListener,
 		logger.NewMetricListener,

@@ -3,7 +3,7 @@ package logger
 import (
 	"exampleapp/domain/event"
 	"exampleapp/infrastructure/postgres"
-	"exampleapp/io"
+	"exampleapp/io/controller"
 	"fmt"
 	"log/slog"
 )
@@ -20,7 +20,7 @@ func (l *LogListener) OnUnhandledEvent(event interface{}) {
 	l.logger.Error(fmt.Sprintf("Unhandled event \"%T\"", event))
 }
 
-func (l *LogListener) OnHttpResponse(event *io.ResponseEvent) {
+func (l *LogListener) OnHttpResponse(event *controller.ResponseEvent) {
 	l.logger.Debug(fmt.Sprintf("%s", event.Request.Pattern), slog.Int("statusCode", event.StatusCode))
 }
 

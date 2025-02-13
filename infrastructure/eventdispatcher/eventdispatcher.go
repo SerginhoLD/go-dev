@@ -5,7 +5,7 @@ import (
 	"exampleapp/domain/eventdispatcher"
 	"exampleapp/infrastructure/logger"
 	"exampleapp/infrastructure/postgres"
-	"exampleapp/io"
+	"exampleapp/io/controller"
 	"fmt"
 )
 
@@ -28,7 +28,7 @@ func (d *EventDispatcherImpl) Dispatch(event interface{}) error {
 			func(interface{}) error { return d.logListener.OnTestEvent(e) },
 			func(interface{}) error { d.metricListener.OnTestEvent(e); return nil },
 		)
-	case *io.ResponseEvent:
+	case *controller.ResponseEvent:
 		callbacks = append(
 			callbacks,
 			func(interface{}) error { d.logListener.OnHttpResponse(e); return nil },

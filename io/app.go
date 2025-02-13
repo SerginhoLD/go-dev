@@ -2,24 +2,29 @@ package io
 
 import (
 	"exampleapp/domain/eventdispatcher"
+	"exampleapp/infrastructure/logger"
 	"exampleapp/io/controller"
+	"github.com/google/uuid"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"net/http"
 	"time"
 )
 
 type App struct {
+	logHandler           *logger.Handler
 	eventDispatcher      eventdispatcher.EventDispatcher
 	homeController       *controller.HomeController
 	getProductController *controller.GetProductController
 }
 
 func NewApp(
+	logHandler *logger.Handler,
 	eventDispatcher eventdispatcher.EventDispatcher,
 	homeController *controller.HomeController,
 	getProductController *controller.GetProductController,
 ) *App {
 	return &App{
+		logHandler,
 		eventDispatcher,
 		homeController,
 		getProductController,
@@ -40,10 +45,13 @@ func (app *App) Run() {
 func (app *App) httpLogMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
+		requestId, _ := uuid.NewV7()
+		w.Header().Set("X-Request-ID", requestId.String())
+		app.logHandler.SetRequestId(requestId.String())
 		logResponseWriter := &LogResponseWriter{http.StatusInternalServerError, w}
 
 		defer func() {
-			app.eventDispatcher.Dispatch(&ResponseEvent{r, logResponseWriter.StatusCode, time.Since(start)})
+			app.eventDispatcher.Dispatch(&controller.ResponseEvent{r, logResponseWriter.StatusCode, time.Since(start)})
 		}()
 
 		next.ServeHTTP(logResponseWriter, r)
@@ -66,10 +74,4 @@ func (w *LogResponseWriter) WriteHeader(statusCode int) {
 
 func (w *LogResponseWriter) Write(b []byte) (int, error) {
 	return w.responseWriter.Write(b)
-}
-
-type ResponseEvent struct {
-	Request    *http.Request
-	StatusCode int
-	Duration   time.Duration
 }

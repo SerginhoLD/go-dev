@@ -2,7 +2,7 @@ package logger
 
 import (
 	"exampleapp/domain/event"
-	"exampleapp/io"
+	"exampleapp/io/controller"
 	"github.com/prometheus/client_golang/prometheus"
 	"strconv"
 )
@@ -47,7 +47,7 @@ func (l *MetricListener) addHistogram(opts prometheus.HistogramOpts, labels ...s
 	prometheus.MustRegister(l.metrics[opts.Name])
 }
 
-func (l *MetricListener) OnHttpResponse(event *io.ResponseEvent) {
+func (l *MetricListener) OnHttpResponse(event *controller.ResponseEvent) {
 	l.metrics["app_http_request_duration_ms"].(*prometheus.HistogramVec).WithLabelValues(event.Request.Pattern, strconv.Itoa(event.StatusCode)).Observe(float64(event.Duration.Milliseconds()))
 }
 
