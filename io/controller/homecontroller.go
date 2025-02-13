@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"encoding/json"
 	"exampleapp/domain/usecase"
 	"net/http"
 	"strconv"
@@ -16,8 +15,6 @@ func NewHomeController(useCase *usecase.PaginateProductsUseCase) *HomeController
 }
 
 func (c *HomeController) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
 	page, _ := strconv.ParseUint(req.URL.Query().Get("page"), 10, 64)
 
 	if page == 0 {
@@ -26,6 +23,5 @@ func (c *HomeController) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 	models := c.useCase.Handle(usecase.PaginateProductsQuery{Page: page, Limit: 2})
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(models)
+	HttpJson(w, models, http.StatusOK)
 }

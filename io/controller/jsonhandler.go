@@ -9,6 +9,14 @@ func NotFoundHandler(w http.ResponseWriter, req *http.Request) {
 	HttpJsonError(w, "Not Found", http.StatusNotFound)
 }
 
+func HttpJson(w http.ResponseWriter, v any, code int) {
+	w.Header().Del("Content-Length")
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.WriteHeader(code)
+	json.NewEncoder(w).Encode(v)
+}
+
 func HttpJsonError(w http.ResponseWriter, error string, code int) {
 	// @see http.Error
 	h := w.Header()

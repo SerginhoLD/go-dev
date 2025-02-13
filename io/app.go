@@ -40,9 +40,13 @@ func (app *App) Run() {
 func (app *App) httpLogMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-		logResponseWriter := &LogResponseWriter{http.StatusOK, w}
+		logResponseWriter := &LogResponseWriter{http.StatusInternalServerError, w}
+
+		defer func() {
+			app.eventDispatcher.Dispatch(&ResponseEvent{r, logResponseWriter.StatusCode, time.Since(start)})
+		}()
+
 		next.ServeHTTP(logResponseWriter, r)
-		app.eventDispatcher.Dispatch(&ResponseEvent{r, logResponseWriter.StatusCode, time.Since(start)})
 	})
 }
 
