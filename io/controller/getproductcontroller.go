@@ -22,7 +22,7 @@ func (c *GetProductController) ServeHTTP(w http.ResponseWriter, req *http.Reques
 	id, err := strconv.ParseUint(req.PathValue("id"), 10, 64)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		HttpJsonError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -33,6 +33,6 @@ func (c *GetProductController) ServeHTTP(w http.ResponseWriter, req *http.Reques
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(p)
 	default:
-		http.Error(w, "Product not found", http.StatusNotFound)
+		HttpJsonError(w, "Product not found", http.StatusNotFound)
 	}
 }

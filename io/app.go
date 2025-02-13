@@ -29,13 +29,12 @@ func NewApp(
 func (app *App) Run() {
 	mux := http.NewServeMux()
 
+	mux.HandleFunc("/", controller.NotFoundHandler)
 	mux.HandleFunc("GET /{$}", app.homeController.ServeHTTP) // https://pkg.go.dev/net/http#hdr-Patterns-ServeMux
 	mux.HandleFunc("GET /product/{id}", app.getProductController.ServeHTTP)
-
 	mux.Handle("GET /metrics", promhttp.Handler())
 
-	handler := app.httpLogMiddleware(mux)
-	http.ListenAndServe(":8080", handler)
+	http.ListenAndServe(":8080", app.httpLogMiddleware(mux))
 }
 
 func (app *App) httpLogMiddleware(next http.Handler) http.Handler {
