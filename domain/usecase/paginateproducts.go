@@ -23,19 +23,23 @@ func NewPaginateProductsUseCase(
 	return &PaginateProductsUseCase{repository, eventDispatcher}
 }
 
-func (u *PaginateProductsUseCase) Handle(query PaginateProductsQuery) []*GetProductViewModel {
+func (u *PaginateProductsUseCase) Handle(query PaginateProductsQuery) []*PaginateProductViewModel {
 	products, _ := u.repository.Paginate(query.Page, query.Limit)
-	models := make([]*GetProductViewModel, 0)
+	models := make([]*PaginateProductViewModel, 0)
 
 	for _, p := range products {
-		models = append(models, &GetProductViewModel{
-			Id:    p.Id,
-			Name:  p.Name,
-			Price: p.Price,
+		models = append(models, &PaginateProductViewModel{
+			Id:   p.Id,
+			Name: p.Name,
 		})
 	}
 
 	u.eventDispatcher.Dispatch(&event.TestEvent{Value: "h"})
 
 	return models
+}
+
+type PaginateProductViewModel struct {
+	Id   uint64 `json:"id"`
+	Name string `json:"name"`
 }
