@@ -1,6 +1,7 @@
 package eventdispatcher
 
 import (
+	"context"
 	domainevent "exampleapp/domain/event"
 	"exampleapp/domain/eventdispatcher"
 	"exampleapp/infrastructure/logger"
@@ -18,29 +19,29 @@ func New(logListener *logger.LogListener, metricListener *logger.MetricListener)
 	return &EventDispatcherImpl{logListener, metricListener}
 }
 
-func (d *EventDispatcherImpl) Dispatch(event interface{}) error {
+func (d *EventDispatcherImpl) Dispatch(ctx context.Context, event interface{}) error {
 	var callbacks []func(interface{}) error
 
 	switch e := event.(type) {
 	case *domainevent.TestEvent:
 		callbacks = append(
 			callbacks,
-			func(interface{}) error { return d.logListener.OnTestEvent(e) },
+			func(interface{}) error { return d.logListener.OnTestEvent(ctx, e) },
 			func(interface{}) error { d.metricListener.OnTestEvent(e); return nil },
 		)
 	case *controller.ResponseEvent:
 		callbacks = append(
 			callbacks,
-			func(interface{}) error { d.logListener.OnHttpResponse(e); return nil },
+			func(interface{}) error { d.logListener.OnHttpResponse(ctx, e); return nil },
 			func(interface{}) error { d.metricListener.OnHttpResponse(e); return nil },
 		)
 	case *postgres.QueryEvent:
 		callbacks = append(
 			callbacks,
-			func(interface{}) error { d.logListener.OnSqlQuery(e); return nil },
+			func(interface{}) error { d.logListener.OnSqlQuery(ctx, e); return nil },
 		)
 	default:
-		d.logListener.OnUnhandledEvent(e)
+		d.logListener.OnUnhandledEvent(ctx, e)
 		panic(fmt.Sprintf("Unhandled event \"%T\"", event))
 	}
 

@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"context"
 	"exampleapp/domain/event"
 	"exampleapp/domain/eventdispatcher"
 	"exampleapp/domain/repository"
@@ -23,8 +24,8 @@ func NewPaginateProductsUseCase(
 	return &PaginateProductsUseCase{repository, eventDispatcher}
 }
 
-func (u *PaginateProductsUseCase) Handle(query PaginateProductsQuery) []*PaginateProductViewModel {
-	products, _ := u.repository.Paginate(query.Page, query.Limit)
+func (u *PaginateProductsUseCase) Handle(ctx context.Context, query PaginateProductsQuery) []*PaginateProductViewModel {
+	products, _ := u.repository.Paginate(ctx, query.Page, query.Limit)
 	models := make([]*PaginateProductViewModel, 0)
 
 	for _, p := range products {
@@ -34,7 +35,7 @@ func (u *PaginateProductsUseCase) Handle(query PaginateProductsQuery) []*Paginat
 		})
 	}
 
-	u.eventDispatcher.Dispatch(&event.TestEvent{Value: "h"})
+	u.eventDispatcher.Dispatch(ctx, &event.TestEvent{Value: "h"})
 
 	return models
 }

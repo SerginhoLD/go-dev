@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"context"
 	"exampleapp/domain/repository"
 )
 
@@ -16,8 +17,8 @@ func NewGetProductUseCase(repository repository.ProductRepository) *GetProductUs
 	return &GetProductUseCase{repository}
 }
 
-func (u *GetProductUseCase) Handle(query GetProductQuery) *GetProductViewModel {
-	p := u.repository.Find(query.Id)
+func (u *GetProductUseCase) Handle(ctx context.Context, query GetProductQuery) *GetProductViewModel {
+	p := u.repository.Find(ctx, query.Id)
 
 	if p == nil {
 		return nil

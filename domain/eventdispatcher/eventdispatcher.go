@@ -1,7 +1,9 @@
 package eventdispatcher
 
+import "context"
+
 type EventDispatcher interface {
-	Dispatch(event interface{}) error
+	Dispatch(ctx context.Context, event interface{}) error
 }
 
 type StoppableEvent interface {

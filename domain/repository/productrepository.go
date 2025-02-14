@@ -1,8 +1,11 @@
 package repository
 
-import "exampleapp/domain/entity"
+import (
+	"context"
+	"exampleapp/domain/entity"
+)
 
 type ProductRepository interface {
-	Find(id uint64) *entity.Product
-	Paginate(page uint64, limit uint64) ([]*entity.Product, uint64)
+	Find(ctx context.Context, id uint64) *entity.Product
+	Paginate(ctx context.Context, page uint64, limit uint64) ([]*entity.Product, uint64)
 }

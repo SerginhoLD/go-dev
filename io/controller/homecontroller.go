@@ -21,7 +21,7 @@ func (c *HomeController) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		page = 1
 	}
 
-	models := c.useCase.Handle(usecase.PaginateProductsQuery{Page: page, Limit: 2})
+	models := c.useCase.Handle(req.Context(), usecase.PaginateProductsQuery{Page: page, Limit: 2})
 
 	HttpJson(w, models, http.StatusOK)
 }

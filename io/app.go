@@ -1,8 +1,8 @@
 package io
 
 import (
+	"context"
 	"exampleapp/domain/eventdispatcher"
-	"exampleapp/infrastructure/logger"
 	"exampleapp/io/controller"
 	"github.com/google/uuid"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -11,20 +11,17 @@ import (
 )
 
 type App struct {
-	logHandler           *logger.Handler
 	eventDispatcher      eventdispatcher.EventDispatcher
 	homeController       *controller.HomeController
 	getProductController *controller.GetProductController
 }
 
 func NewApp(
-	logHandler *logger.Handler,
 	eventDispatcher eventdispatcher.EventDispatcher,
 	homeController *controller.HomeController,
 	getProductController *controller.GetProductController,
 ) *App {
 	return &App{
-		logHandler,
 		eventDispatcher,
 		homeController,
 		getProductController,
@@ -47,14 +44,14 @@ func (app *App) httpLogMiddleware(next http.Handler) http.Handler {
 		start := time.Now()
 		requestId, _ := uuid.NewV7()
 		w.Header().Set("X-Request-ID", requestId.String())
-		app.logHandler.SetRequestId(requestId.String())
 		logResponseWriter := &LogResponseWriter{http.StatusInternalServerError, w}
+		logRequest := r.WithContext(context.WithValue(r.Context(), "X-Request-ID", requestId.String()))
 
 		defer func() {
-			app.eventDispatcher.Dispatch(&controller.ResponseEvent{r, logResponseWriter.StatusCode, time.Since(start)})
+			app.eventDispatcher.Dispatch(logRequest.Context(), &controller.ResponseEvent{logRequest, logResponseWriter.StatusCode, time.Since(start)})
 		}()
 
-		next.ServeHTTP(logResponseWriter, r)
+		next.ServeHTTP(logResponseWriter, logRequest)
 	})
 }
 

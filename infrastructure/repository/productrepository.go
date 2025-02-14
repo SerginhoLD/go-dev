@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"exampleapp/domain/entity"
@@ -16,9 +17,9 @@ func NewProductRepositoryImpl(conn *postgres.Conn) *ProductRepositoryImpl {
 	return &ProductRepositoryImpl{conn}
 }
 
-func (r *ProductRepositoryImpl) Find(id uint64) *entity.Product {
+func (r *ProductRepositoryImpl) Find(ctx context.Context, id uint64) *entity.Product {
 	product := new(entity.Product)
-	err := r.conn.QueryRow("select id, name, price from products where id = $1", id).Scan(&product.Id, &product.Name, &product.Price)
+	err := r.conn.QueryRowContext(ctx, "select id, name, price from products where id = $1", id).Scan(&product.Id, &product.Name, &product.Price)
 
 	switch {
 	case errors.Is(err, sql.ErrNoRows):
@@ -30,9 +31,9 @@ func (r *ProductRepositoryImpl) Find(id uint64) *entity.Product {
 	}
 }
 
-func (r *ProductRepositoryImpl) Paginate(page uint64, limit uint64) ([]*entity.Product, uint64) {
+func (r *ProductRepositoryImpl) Paginate(ctx context.Context, page uint64, limit uint64) ([]*entity.Product, uint64) {
 	var total uint64
-	err := r.conn.QueryRow("select count(*) from products").Scan(&total)
+	err := r.conn.QueryRowContext(ctx, "select count(*) from products").Scan(&total)
 
 	if err != nil {
 		panic(err)
@@ -42,7 +43,7 @@ func (r *ProductRepositoryImpl) Paginate(page uint64, limit uint64) ([]*entity.P
 		return []*entity.Product{}, 0
 	}
 
-	rows, err := r.conn.Query(fmt.Sprintf("SELECT id, name, price from products limit %d offset %d", limit, (page-1)*limit))
+	rows, err := r.conn.QueryContext(ctx, fmt.Sprintf("SELECT id, name, price from products limit %d offset %d", limit, (page-1)*limit))
 
 	if err != nil {
 		panic(err)

@@ -22,7 +22,7 @@ func (c *GetProductController) ServeHTTP(w http.ResponseWriter, req *http.Reques
 		return
 	}
 
-	p := c.useCase.Handle(usecase.GetProductQuery{id})
+	p := c.useCase.Handle(req.Context(), usecase.GetProductQuery{id})
 
 	if p == nil {
 		HttpJsonError(w, "Product not found", http.StatusNotFound)

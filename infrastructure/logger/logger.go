@@ -11,8 +11,7 @@ func NewLogger(handler *Handler) *slog.Logger {
 }
 
 type Handler struct {
-	handler   slog.Handler
-	requestId string
+	handler slog.Handler
 }
 
 func NewHandler() *Handler {
@@ -23,16 +22,15 @@ func NewHandler() *Handler {
 	}
 }
 
-func (h *Handler) SetRequestId(id string) {
-	h.requestId = id
-}
-
 func (h *Handler) Enabled(ctx context.Context, level slog.Level) bool {
 	return h.handler.Enabled(ctx, level)
 }
 
 func (h *Handler) Handle(ctx context.Context, r slog.Record) error {
-	r.AddAttrs(slog.String("X-Request-ID", h.requestId))
+	if requestId, ok := ctx.Value("X-Request-ID").(string); ok {
+		r.AddAttrs(slog.String("X-Request-ID", requestId))
+	}
+
 	return h.handler.Handle(ctx, r)
 }
 
