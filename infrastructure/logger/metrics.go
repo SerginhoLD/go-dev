@@ -1,23 +1,15 @@
 package logger
 
 import (
-	"exampleapp/domain/event"
-	"exampleapp/io/controller"
 	"github.com/prometheus/client_golang/prometheus"
-	"strconv"
 )
 
-type MetricListener struct {
+type Metrics struct {
 	metrics map[string]prometheus.Collector
 }
 
-func NewMetricListener() *MetricListener {
-	l := &MetricListener{make(map[string]prometheus.Collector)}
-
-	l.addCounter(prometheus.CounterOpts{
-		Name: "app_test_counter",
-		//Help: "An example counter metric",
-	})
+func NewMetrics() *Metrics {
+	l := &Metrics{make(map[string]prometheus.Collector)}
 
 	l.addHistogram(prometheus.HistogramOpts{
 		Name:    "app_http_request_duration_ms",
@@ -27,7 +19,7 @@ func NewMetricListener() *MetricListener {
 	return l
 }
 
-func (l *MetricListener) addCounter(opts prometheus.CounterOpts, labels ...string) {
+func (l *Metrics) addCounter(opts prometheus.CounterOpts, labels ...string) {
 	if len(labels) > 0 {
 		l.metrics[opts.Name] = prometheus.NewCounterVec(opts, labels)
 	} else {
@@ -37,7 +29,7 @@ func (l *MetricListener) addCounter(opts prometheus.CounterOpts, labels ...strin
 	prometheus.MustRegister(l.metrics[opts.Name])
 }
 
-func (l *MetricListener) addHistogram(opts prometheus.HistogramOpts, labels ...string) {
+func (l *Metrics) addHistogram(opts prometheus.HistogramOpts, labels ...string) {
 	if len(labels) > 0 {
 		l.metrics[opts.Name] = prometheus.NewHistogramVec(opts, labels)
 	} else {
@@ -47,7 +39,7 @@ func (l *MetricListener) addHistogram(opts prometheus.HistogramOpts, labels ...s
 	prometheus.MustRegister(l.metrics[opts.Name])
 }
 
-func (l *MetricListener) Add(name string, value float64, labelValues ...string) {
+func (l *Metrics) Add(name string, value float64, labelValues ...string) {
 	//if value < 0 {
 	//	return
 	//}
@@ -70,13 +62,4 @@ func (l *MetricListener) Add(name string, value float64, labelValues ...string) 
 		//default:
 		//	panic(fmt.Sprintf("Unknown metric type (name: %s, type: %T)", name, metric))
 	}
-
-}
-
-func (l *MetricListener) OnHttpResponse(event *controller.ResponseEvent) {
-	l.Add("app_http_request_duration_ms", float64(event.Duration.Milliseconds()), event.Request.Pattern, strconv.Itoa(event.StatusCode))
-}
-
-func (l *MetricListener) OnTestEvent(event *event.TestEvent) {
-	l.Add("app_test_counter", 1)
 }

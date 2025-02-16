@@ -2,8 +2,6 @@ package usecase
 
 import (
 	"context"
-	"exampleapp/domain/event"
-	"exampleapp/domain/eventdispatcher"
 	"exampleapp/domain/repository"
 )
 
@@ -13,15 +11,13 @@ type PaginateProductsQuery struct {
 }
 
 type PaginateProductsUseCase struct {
-	repository      repository.ProductRepository
-	eventDispatcher eventdispatcher.EventDispatcher
+	repository repository.ProductRepository
 }
 
 func NewPaginateProductsUseCase(
 	repository repository.ProductRepository,
-	eventDispatcher eventdispatcher.EventDispatcher,
 ) *PaginateProductsUseCase {
-	return &PaginateProductsUseCase{repository, eventDispatcher}
+	return &PaginateProductsUseCase{repository}
 }
 
 func (u *PaginateProductsUseCase) Handle(ctx context.Context, query PaginateProductsQuery) []*PaginateProductViewModel {
@@ -34,8 +30,6 @@ func (u *PaginateProductsUseCase) Handle(ctx context.Context, query PaginateProd
 			Name: p.Name,
 		})
 	}
-
-	u.eventDispatcher.Dispatch(ctx, &event.TestEvent{Value: "h"})
 
 	return models
 }

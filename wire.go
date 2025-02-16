@@ -4,10 +4,10 @@
 package main
 
 import (
-	"exampleapp/domain/eventdispatcher"
+	"exampleapp/domain/errors"
 	"exampleapp/domain/repository"
 	"exampleapp/domain/usecase"
-	eventdispatcherimpl "exampleapp/infrastructure/eventdispatcher"
+	errorsimpl "exampleapp/infrastructure/errors"
 	"exampleapp/infrastructure/logger"
 	"exampleapp/infrastructure/postgres"
 	repositoryimpl "exampleapp/infrastructure/repository"
@@ -21,11 +21,10 @@ func InitializeApp() *io.App {
 		io.NewApp,
 		logger.NewHandler,
 		logger.NewLogger,
-		logger.NewLogListener,
-		logger.NewMetricListener,
+		logger.NewMetrics,
+		errorsimpl.NewFactory,
+		wire.Bind(new(errors.Factory), new(*errorsimpl.FactoryImpl)),
 		postgres.NewConn,
-		eventdispatcherimpl.New,
-		wire.Bind(new(eventdispatcher.EventDispatcher), new(*eventdispatcherimpl.EventDispatcherImpl)),
 		repositoryimpl.NewProductRepositoryImpl,
 		wire.Bind(new(repository.ProductRepository), new(*repositoryimpl.ProductRepositoryImpl)),
 		usecase.NewPaginateProductsUseCase,

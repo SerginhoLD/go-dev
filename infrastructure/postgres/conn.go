@@ -3,17 +3,17 @@ package postgres
 import (
 	"context"
 	"database/sql"
-	"exampleapp/domain/eventdispatcher"
 	_ "github.com/lib/pq"
+	"log/slog"
 	"os"
 )
 
 type Conn struct {
-	db              *sql.DB
-	eventDispatcher eventdispatcher.EventDispatcher
+	db     *sql.DB
+	logger *slog.Logger
 }
 
-func NewConn(eventDispatcher eventdispatcher.EventDispatcher) *Conn {
+func NewConn(logger *slog.Logger) *Conn {
 	dsn, _ := os.LookupEnv("GOOSE_DBSTRING")
 	db, err := sql.Open("postgres", dsn)
 
@@ -21,7 +21,7 @@ func NewConn(eventDispatcher eventdispatcher.EventDispatcher) *Conn {
 		panic(err)
 	}
 
-	return &Conn{db, eventDispatcher}
+	return &Conn{db, logger}
 }
 
 func (c *Conn) Close() error {
@@ -37,7 +37,7 @@ func (c *Conn) Query(query string, args ...any) (*sql.Rows, error) {
 }
 
 func (c *Conn) QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error) {
-	c.eventDispatcher.Dispatch(ctx, &QueryEvent{query})
+	c.logger.DebugContext(ctx, query)
 	return c.db.QueryContext(ctx, query, args...)
 }
 
@@ -46,10 +46,6 @@ func (c *Conn) QueryRow(query string, args ...any) *sql.Row {
 }
 
 func (c *Conn) QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row {
-	c.eventDispatcher.Dispatch(ctx, &QueryEvent{query})
+	c.logger.DebugContext(ctx, query)
 	return c.db.QueryRowContext(ctx, query, args...)
-}
-
-type QueryEvent struct {
-	Query string
 }
