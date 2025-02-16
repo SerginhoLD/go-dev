@@ -28,7 +28,7 @@ func NewMetricListener() *MetricListener {
 }
 
 func (l *MetricListener) addCounter(opts prometheus.CounterOpts, labels ...string) {
-	if (len(labels)) > 0 {
+	if len(labels) > 0 {
 		l.metrics[opts.Name] = prometheus.NewCounterVec(opts, labels)
 	} else {
 		l.metrics[opts.Name] = prometheus.NewCounter(opts)
@@ -38,7 +38,7 @@ func (l *MetricListener) addCounter(opts prometheus.CounterOpts, labels ...strin
 }
 
 func (l *MetricListener) addHistogram(opts prometheus.HistogramOpts, labels ...string) {
-	if (len(labels)) > 0 {
+	if len(labels) > 0 {
 		l.metrics[opts.Name] = prometheus.NewHistogramVec(opts, labels)
 	} else {
 		l.metrics[opts.Name] = prometheus.NewHistogram(opts)
@@ -47,10 +47,36 @@ func (l *MetricListener) addHistogram(opts prometheus.HistogramOpts, labels ...s
 	prometheus.MustRegister(l.metrics[opts.Name])
 }
 
+func (l *MetricListener) Add(name string, value float64, labelValues ...string) {
+	//if value < 0 {
+	//	return
+	//}
+
+	metric, ok := l.metrics[name]
+
+	if !ok {
+		return
+	}
+
+	switch m := metric.(type) {
+	case *prometheus.CounterVec:
+		m.WithLabelValues(labelValues...).Add(value)
+	case prometheus.Counter:
+		m.Add(value)
+	case *prometheus.HistogramVec:
+		m.WithLabelValues(labelValues...).Observe(value)
+	case prometheus.Histogram:
+		m.Observe(value)
+		//default:
+		//	panic(fmt.Sprintf("Unknown metric type (name: %s, type: %T)", name, metric))
+	}
+
+}
+
 func (l *MetricListener) OnHttpResponse(event *controller.ResponseEvent) {
-	l.metrics["app_http_request_duration_ms"].(*prometheus.HistogramVec).WithLabelValues(event.Request.Pattern, strconv.Itoa(event.StatusCode)).Observe(float64(event.Duration.Milliseconds()))
+	l.Add("app_http_request_duration_ms", float64(event.Duration.Milliseconds()), event.Request.Pattern, strconv.Itoa(event.StatusCode))
 }
 
 func (l *MetricListener) OnTestEvent(event *event.TestEvent) {
-	l.metrics["app_test_counter"].(prometheus.Counter).Inc()
+	l.Add("app_test_counter", 1)
 }
