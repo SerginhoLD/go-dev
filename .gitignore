@@ -2,3 +2,4 @@
 /docker-compose.override.yml
 
 /wire_gen.go
+/coverage.*

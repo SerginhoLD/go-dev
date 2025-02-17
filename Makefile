@@ -13,6 +13,14 @@ dev-db-clean: ## Recreate dev database
 	@goose down-to 0
 	@goose up
 
+test: ## Run tests
+	@go test ./...
+
+coverage-html: ## Coverage html
+	@go test -coverprofile=coverage.out ./...
+	@go tool cover -html=coverage.out -o coverage.html
+
+
 name := app
 
 create-migration: ## Creates new migration file with the current timestamp

@@ -16,8 +16,8 @@
 
 ## Тесты
 
-`go test ./...`
+`make test`
 
 or
 
-`go test -cover ./...`
+`make coverage-html`
