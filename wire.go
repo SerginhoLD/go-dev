@@ -15,13 +15,19 @@ import (
 	"exampleapp/io/controller"
 	"github.com/google/wire"
 	"io"
+	"log/slog"
 	"os"
 )
 
 func InitializeApp() *appio.App {
 	wire.Build(
 		appio.NewApp,
-		wire.NewSet(logger.NewLogger, logger.NewHandler, wire.InterfaceValue(new(io.Writer), os.Stderr)),
+		wire.NewSet(
+			slog.New,
+			logger.NewHandler,
+			wire.Bind(new(slog.Handler), new(*logger.Handler)),
+			wire.InterfaceValue(new(io.Writer), os.Stderr),
+		),
 		logger.NewMetrics,
 		errorsimpl.NewFactory,
 		wire.Bind(new(errors.Factory), new(*errorsimpl.FactoryImpl)),

@@ -3,13 +3,10 @@ package logger
 import (
 	"context"
 	"encoding/json"
+	"github.com/google/uuid"
 	"io"
 	"log/slog"
 )
-
-func NewLogger(handler *Handler) *slog.Logger {
-	return slog.New(handler)
-}
 
 type Handler struct {
 	handler slog.Handler
@@ -51,6 +48,9 @@ func (h *Handler) Handle(ctx context.Context, r slog.Record) error {
 	if requestId, ok := ctx.Value("X-Request-ID").(string); ok {
 		record.AddAttrs(slog.String("X-Request-ID", requestId))
 	}
+
+	id, _ := uuid.NewV7()
+	record.AddAttrs(slog.String("id", id.String()))
 
 	return h.handler.Handle(ctx, record)
 }
