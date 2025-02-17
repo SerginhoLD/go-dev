@@ -2,8 +2,9 @@ package logger
 
 import (
 	"context"
+	"encoding/json"
+	"io"
 	"log/slog"
-	"os"
 )
 
 func NewLogger(handler *Handler) *slog.Logger {
@@ -14,9 +15,9 @@ type Handler struct {
 	handler slog.Handler
 }
 
-func NewHandler() *Handler {
+func NewHandler(writer io.Writer) *Handler {
 	return &Handler{
-		handler: slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
+		handler: slog.NewJSONHandler(writer, &slog.HandlerOptions{
 			Level: slog.LevelDebug,
 		}),
 	}
@@ -27,11 +28,29 @@ func (h *Handler) Enabled(ctx context.Context, level slog.Level) bool {
 }
 
 func (h *Handler) Handle(ctx context.Context, r slog.Record) error {
-	if requestId, ok := ctx.Value("X-Request-ID").(string); ok {
-		r.AddAttrs(slog.String("X-Request-ID", requestId))
+	record := slog.NewRecord(r.Time, r.Level, r.Message, r.PC)
+	contextMap := make(map[string]any)
+
+	r.Attrs(func(attr slog.Attr) bool {
+		if "err" == attr.Key && slog.KindString == attr.Value.Kind() {
+			record.AddAttrs(attr)
+		} else {
+			contextMap[attr.Key] = attr.Value.Any()
+		}
+
+		return true
+	})
+
+	if len(contextMap) > 0 {
+		contextBytes, _ := json.Marshal(contextMap)
+		record.AddAttrs(slog.String("context", string(contextBytes)))
 	}
 
-	return h.handler.Handle(ctx, r)
+	if requestId, ok := ctx.Value("X-Request-ID").(string); ok {
+		record.AddAttrs(slog.String("X-Request-ID", requestId))
+	}
+
+	return h.handler.Handle(ctx, record)
 }
 
 func (h *Handler) WithAttrs(attrs []slog.Attr) slog.Handler {

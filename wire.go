@@ -11,16 +11,17 @@ import (
 	"exampleapp/infrastructure/logger"
 	"exampleapp/infrastructure/postgres"
 	repositoryimpl "exampleapp/infrastructure/repository"
-	"exampleapp/io"
+	appio "exampleapp/io"
 	"exampleapp/io/controller"
 	"github.com/google/wire"
+	"io"
+	"os"
 )
 
-func InitializeApp() *io.App {
+func InitializeApp() *appio.App {
 	wire.Build(
-		io.NewApp,
-		logger.NewHandler,
-		logger.NewLogger,
+		appio.NewApp,
+		wire.NewSet(logger.NewLogger, logger.NewHandler, wire.InterfaceValue(new(io.Writer), os.Stderr)),
 		logger.NewMetrics,
 		errorsimpl.NewFactory,
 		wire.Bind(new(errors.Factory), new(*errorsimpl.FactoryImpl)),
@@ -33,5 +34,5 @@ func InitializeApp() *io.App {
 		controller.NewGetProductController,
 	)
 
-	return &io.App{}
+	return &appio.App{}
 }
