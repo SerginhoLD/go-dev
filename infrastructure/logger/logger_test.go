@@ -27,10 +27,14 @@ func TestLog(t *testing.T) {
 			attrs: []any{slog.Int("statusCode", 500), slog.Int("err", 2)},
 			json:  `"level":"INFO","msg":"Test","context":"{\"err\":2,\"statusCode\":500}"}`,
 		},
-		//{
-		//	attrs: []any{slog.Group("payload", slog.Int("statusCode", 200))},
-		//	json:  `"level":"INFO","msg":"Test","context":"{\"err\":2,\"statusCode\":500}"}`,
-		//},
+		{
+			attrs: []any{slog.Group("payload", slog.Int("statusCode", 200))},
+			json:  `"level":"INFO","msg":"Test","context":"{\"payload\":{\"statusCode\":200}}"}`,
+		},
+		{
+			attrs: []any{slog.Group("payload", slog.Group("two", slog.String("statusCode", "201")), slog.String("orderCode", "Abc"))},
+			json:  `"level":"INFO","msg":"Test","context":"{\"payload\":{\"orderCode\":\"Abc\",\"two\":{\"statusCode\":\"201\"}}}"}`,
+		},
 	}
 
 	for i, tt := range tests {

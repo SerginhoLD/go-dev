@@ -34,6 +34,8 @@ func (h *Handler) Handle(ctx context.Context, r slog.Record) error {
 	r.Attrs(func(attr slog.Attr) bool {
 		if "err" == attr.Key && slog.KindString == attr.Value.Kind() {
 			record.AddAttrs(attr)
+		} else if slog.KindGroup == attr.Value.Kind() {
+			contextMap[attr.Key] = h.handleGroup(attr.Value.Group())
 		} else {
 			contextMap[attr.Key] = attr.Value.Any()
 		}
@@ -51,6 +53,20 @@ func (h *Handler) Handle(ctx context.Context, r slog.Record) error {
 	}
 
 	return h.handler.Handle(ctx, record)
+}
+
+func (h *Handler) handleGroup(attrs []slog.Attr) map[string]any {
+	contextMap := make(map[string]any)
+
+	for _, attr := range attrs {
+		if slog.KindGroup == attr.Value.Kind() {
+			contextMap[attr.Key] = h.handleGroup(attr.Value.Group())
+		} else {
+			contextMap[attr.Key] = attr.Value.Any()
+		}
+	}
+
+	return contextMap
 }
 
 func (h *Handler) WithAttrs(attrs []slog.Attr) slog.Handler {
