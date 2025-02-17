@@ -34,6 +34,7 @@ func InitializeApp() *appio.App {
 		postgres.NewConn,
 		repositoryimpl.NewProductRepositoryImpl,
 		wire.Bind(new(repository.ProductRepository), new(*repositoryimpl.ProductRepositoryImpl)),
+		controller.NewCoverageController,
 		usecase.NewPaginateProductsUseCase,
 		controller.NewHomeController,
 		usecase.NewGetProductUseCase,

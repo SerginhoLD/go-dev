@@ -16,6 +16,7 @@ import (
 type App struct {
 	logger               *slog.Logger
 	metrics              *logger.Metrics
+	coverageController   *controller.CoverageController
 	homeController       *controller.HomeController
 	getProductController *controller.GetProductController
 }
@@ -23,12 +24,14 @@ type App struct {
 func NewApp(
 	logger *slog.Logger,
 	metrics *logger.Metrics,
+	coverageController *controller.CoverageController,
 	homeController *controller.HomeController,
 	getProductController *controller.GetProductController,
 ) *App {
 	return &App{
 		logger,
 		metrics,
+		coverageController,
 		homeController,
 		getProductController,
 	}
@@ -41,6 +44,7 @@ func (app *App) Run() {
 	mux.HandleFunc("GET /{$}", app.homeController.ServeHTTP) // https://pkg.go.dev/net/http#hdr-Patterns-ServeMux
 	mux.HandleFunc("GET /product/{id}", app.getProductController.ServeHTTP)
 	mux.Handle("GET /metrics", promhttp.Handler())
+	mux.HandleFunc("GET /coverage", app.coverageController.ServeHTTP)
 
 	http.ListenAndServe(":8080", app.httpLogMiddleware(mux))
 }
