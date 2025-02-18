@@ -7,10 +7,12 @@ import (
 	"exampleapp/domain/errors"
 	"exampleapp/domain/repository"
 	"exampleapp/domain/usecase"
+	"exampleapp/domain/validator"
 	errorsimpl "exampleapp/infrastructure/errors"
 	"exampleapp/infrastructure/logger"
 	"exampleapp/infrastructure/postgres"
 	repositoryimpl "exampleapp/infrastructure/repository"
+	validatorimpl "exampleapp/infrastructure/validator"
 	appio "exampleapp/io"
 	"exampleapp/io/controller"
 	"github.com/google/wire"
@@ -31,6 +33,8 @@ func InitializeApp() *appio.App {
 		logger.NewMetrics,
 		errorsimpl.NewFactory,
 		wire.Bind(new(errors.Factory), new(*errorsimpl.FactoryImpl)),
+		validatorimpl.New,
+		wire.Bind(new(validator.Validator), new(*validatorimpl.ValidatorImpl)),
 		postgres.NewConn,
 		repositoryimpl.NewProductRepositoryImpl,
 		wire.Bind(new(repository.ProductRepository), new(*repositoryimpl.ProductRepositoryImpl)),

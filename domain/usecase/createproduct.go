@@ -5,23 +5,31 @@ import (
 	"exampleapp/domain/entity"
 	"exampleapp/domain/errors"
 	"exampleapp/domain/repository"
+	"exampleapp/domain/validator"
 )
 
 type CreateProductCommand struct {
-	Name  string  `json:"name"`
-	Price float64 `json:"price"`
+	Name  string  `json:"name" validate:"required,min=3,max=255"`
+	Price float64 `json:"price" validate:"required,gte=1"`
 }
 
 type CreateProductUseCase struct {
 	errFactory errors.Factory
+	validator  validator.Validator
 	repository repository.ProductRepository
 }
 
-func NewCreateProductUseCase(errFactory errors.Factory, repository repository.ProductRepository) *CreateProductUseCase {
-	return &CreateProductUseCase{errFactory, repository}
+func NewCreateProductUseCase(errFactory errors.Factory, validator validator.Validator, repository repository.ProductRepository) *CreateProductUseCase {
+	return &CreateProductUseCase{errFactory, validator, repository}
 }
 
 func (u *CreateProductUseCase) Handle(ctx context.Context, command CreateProductCommand) (*CreateProductViewModel, error) {
+	err := u.validator.Validate(command)
+
+	if err != nil {
+		return nil, u.errFactory.WrapContext(ctx, "CreateProduct: %w", err)
+	}
+
 	product := u.repository.FindByName(ctx, command.Name)
 
 	if product != nil {
