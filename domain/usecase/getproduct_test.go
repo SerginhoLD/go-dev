@@ -47,6 +47,14 @@ func (m *MockRepository) Find(ctx context.Context, id uint64) *entity.Product {
 	}
 }
 
+func (m *MockRepository) FindByName(ctx context.Context, name string) *entity.Product {
+	panic("not tested")
+}
+
 func (m *MockRepository) Paginate(ctx context.Context, page uint64, limit uint64) ([]*entity.Product, uint64) {
+	panic("not tested")
+}
+
+func (m *MockRepository) Create(ctx context.Context, product *entity.Product) {
 	panic("not tested")
 }

@@ -31,6 +31,26 @@ func (r *ProductRepositoryImpl) Find(ctx context.Context, id uint64) *entity.Pro
 	}
 }
 
+/*func (r *ProductRepositoryImpl) hydrate(row *sql.Row) *entity.Product {
+	product := new(entity.Product)
+	row.Scan(&product.Id, &product.Name, &product.Price)
+	return product
+}*/
+
+func (r *ProductRepositoryImpl) FindByName(ctx context.Context, name string) *entity.Product {
+	product := new(entity.Product)
+	err := r.conn.QueryRowContext(ctx, "select id, name, price from products where name = $1", name).Scan(&product.Id, &product.Name, &product.Price)
+
+	switch {
+	case errors.Is(err, sql.ErrNoRows):
+		return nil
+	case err != nil:
+		panic(err)
+	default:
+		return product
+	}
+}
+
 func (r *ProductRepositoryImpl) Paginate(ctx context.Context, page uint64, limit uint64) ([]*entity.Product, uint64) {
 	var total uint64
 	err := r.conn.QueryRowContext(ctx, "select count(*) from products").Scan(&total)
@@ -64,4 +84,12 @@ func (r *ProductRepositoryImpl) Paginate(ctx context.Context, page uint64, limit
 	}
 
 	return products, total
+}
+
+func (r *ProductRepositoryImpl) Create(ctx context.Context, product *entity.Product) {
+	err := r.conn.QueryRowContext(ctx, "insert into products (name, price) values ($1, $2) RETURNING id", product.Name, product.Price).Scan(&product.Id)
+
+	if err != nil {
+		panic(err)
+	}
 }

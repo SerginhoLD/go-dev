@@ -49,3 +49,8 @@ func (c *Conn) QueryRowContext(ctx context.Context, query string, args ...any) *
 	c.logger.DebugContext(ctx, query)
 	return c.db.QueryRowContext(ctx, query, args...)
 }
+
+func (c *Conn) ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error) {
+	c.logger.DebugContext(ctx, query)
+	return c.db.ExecContext(ctx, query, args...)
+}

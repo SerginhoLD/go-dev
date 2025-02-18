@@ -39,6 +39,8 @@ func InitializeApp() *appio.App {
 		controller.NewHomeController,
 		usecase.NewGetProductUseCase,
 		controller.NewGetProductController,
+		usecase.NewCreateProductUseCase,
+		controller.NewCreateProductController,
 	)
 
 	return &appio.App{}
