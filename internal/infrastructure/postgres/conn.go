@@ -15,8 +15,7 @@ type Conn struct {
 }
 
 func NewConn(logger *slog.Logger) *Conn {
-	dsn, _ := os.LookupEnv("GOOSE_DBSTRING")
-	db, err := sql.Open("postgres", dsn)
+	db, err := sql.Open("postgres", os.Getenv("GOOSE_DBSTRING"))
 
 	if err != nil {
 		panic(err)

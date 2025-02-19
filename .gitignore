@@ -1,5 +1,5 @@
 /.idea/
+/.env.local
 /docker-compose.override.yml
-
-*_gen.go
 /coverage.*
+*_gen.go

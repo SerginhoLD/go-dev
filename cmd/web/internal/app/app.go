@@ -9,6 +9,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"log/slog"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 )
@@ -53,7 +54,11 @@ func (app *App) Run() {
 	mux.Handle("GET /metrics", promhttp.Handler())
 	mux.HandleFunc("GET /coverage", app.coverageController.ServeHTTP)
 
-	http.ListenAndServe(":8080", app.logMiddleware(mux))
+	app.logger.Debug(fmt.Sprintf("server: start (env=%s)", os.Getenv("APP_ENV")))
+
+	if err := http.ListenAndServe(":8080", app.logMiddleware(mux)); err != nil {
+		app.logger.Error(fmt.Sprintf("server: %s", err.Error()))
+	}
 }
 
 func (app *App) logMiddleware(next http.Handler) http.Handler {

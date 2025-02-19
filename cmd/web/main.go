@@ -5,7 +5,8 @@ import (
 )
 
 func main() {
-	godotenv.Load()
+	godotenv.Load(".env.local")
+	godotenv.Load(".env")
 	app := InitializeApp()
 	app.Run()
 }
