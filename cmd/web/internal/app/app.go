@@ -2,6 +2,8 @@ package app
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"exampleapp/internal/infrastructure/logger"
 	"exampleapp/internal/infrastructure/postgres"
 	"fmt"
@@ -103,19 +105,24 @@ func (app *App) transactionMiddleware(next http.Handler) http.Handler {
 		*r = *r.WithContext(context.WithValue(r.Context(), "*sql.Tx", tx))
 
 		defer func() {
-			if tx.Rollback() == nil {
+			errRollback := tx.Rollback()
+
+			if errRollback == nil {
 				app.logger.DebugContext(r.Context(), fmt.Sprintf(`sql: rollback "%s %s"`, r.Method, r.RequestURI))
+			} else if !errors.Is(errRollback, sql.ErrTxDone) {
+				panic(errRollback)
 			}
 		}()
 
 		defer func() {
 			if w.(*LogResponseWriter).StatusCode < 400 {
-				err := tx.Commit()
-				app.logger.DebugContext(r.Context(), fmt.Sprintf(`sql: commit "%s %s"`, r.Method, r.RequestURI))
+				errCommit := tx.Commit()
 
-				if err != nil {
-					panic(err)
+				if errCommit != nil {
+					panic(errCommit)
 				}
+
+				app.logger.DebugContext(r.Context(), fmt.Sprintf(`sql: commit "%s %s"`, r.Method, r.RequestURI))
 			}
 		}()
 
