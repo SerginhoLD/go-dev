@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	"exampleapp/domain/entity"
+	"exampleapp/internal/domain/entity"
 )
 
 type ProductRepository interface {

@@ -2,10 +2,10 @@ package usecase
 
 import (
 	"context"
-	"exampleapp/domain/entity"
-	"exampleapp/domain/errors"
-	"exampleapp/domain/repository"
-	"exampleapp/domain/validator"
+	"exampleapp/internal/domain/entity"
+	"exampleapp/internal/domain/errors"
+	"exampleapp/internal/domain/repository"
+	"exampleapp/internal/domain/validator"
 )
 
 type CreateProductCommand struct {

@@ -4,26 +4,25 @@
 package main
 
 import (
-	"exampleapp/domain/errors"
-	"exampleapp/domain/repository"
-	"exampleapp/domain/usecase"
-	"exampleapp/domain/validator"
-	errorsimpl "exampleapp/infrastructure/errors"
-	"exampleapp/infrastructure/logger"
-	"exampleapp/infrastructure/postgres"
-	repositoryimpl "exampleapp/infrastructure/repository"
-	validatorimpl "exampleapp/infrastructure/validator"
-	appio "exampleapp/io"
-	"exampleapp/io/controller"
+	"exampleapp/cmd/web/internal/app"
+	"exampleapp/internal/domain/errors"
+	"exampleapp/internal/domain/repository"
+	"exampleapp/internal/domain/usecase"
+	"exampleapp/internal/domain/validator"
+	errorsimpl "exampleapp/internal/infrastructure/errors"
+	"exampleapp/internal/infrastructure/logger"
+	"exampleapp/internal/infrastructure/postgres"
+	repositoryimpl "exampleapp/internal/infrastructure/repository"
+	validatorimpl "exampleapp/internal/infrastructure/validator"
 	"github.com/google/wire"
 	"io"
 	"log/slog"
 	"os"
 )
 
-func InitializeApp() *appio.App {
+func InitializeApp() *app.App {
 	wire.Build(
-		appio.NewApp,
+		app.New,
 		wire.NewSet(
 			slog.New,
 			logger.NewHandler,
@@ -38,14 +37,14 @@ func InitializeApp() *appio.App {
 		postgres.NewConn,
 		repositoryimpl.NewProductRepositoryImpl,
 		wire.Bind(new(repository.ProductRepository), new(*repositoryimpl.ProductRepositoryImpl)),
-		controller.NewCoverageController,
+		app.NewCoverageController,
 		usecase.NewPaginateProductsUseCase,
-		controller.NewHomeController,
+		app.NewHomeController,
 		usecase.NewGetProductUseCase,
-		controller.NewGetProductController,
+		app.NewGetProductController,
 		usecase.NewCreateProductUseCase,
-		controller.NewCreateProductController,
+		app.NewCreateProductController,
 	)
 
-	return &appio.App{}
+	return &app.App{}
 }

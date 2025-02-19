@@ -1,8 +1,8 @@
-package controller
+package app
 
 import (
-	"exampleapp/domain/errors"
-	"exampleapp/domain/usecase"
+	"exampleapp/internal/domain/errors"
+	"exampleapp/internal/domain/usecase"
 	"net/http"
 	"strconv"
 )
@@ -16,15 +16,15 @@ func NewGetProductController(errFactory errors.Factory, useCase *usecase.GetProd
 	return &GetProductController{errFactory, useCase}
 }
 
-func (c *GetProductController) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	id, err := strconv.ParseUint(req.PathValue("id"), 10, 64)
+func (c *GetProductController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseUint(r.PathValue("id"), 10, 64)
 
 	if err != nil {
-		HttpJsonError(w, c.errFactory.WrapContext(req.Context(), "GetProduct: %w", err).Error(), http.StatusBadRequest)
+		HttpJsonError(w, c.errFactory.WrapContext(r.Context(), "GetProduct: %w", err).Error(), http.StatusBadRequest)
 		return
 	}
 
-	p := c.useCase.Handle(req.Context(), usecase.GetProductQuery{id})
+	p := c.useCase.Handle(r.Context(), usecase.GetProductQuery{id})
 
 	if p == nil {
 		HttpJsonError(w, "Product not found", http.StatusNotFound)

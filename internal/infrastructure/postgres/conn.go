@@ -40,7 +40,7 @@ func (c *Conn) Query(query string, args ...any) (*sql.Rows, error) {
 func (c *Conn) QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error) {
 	c.logger.DebugContext(ctx, fmt.Sprintf("sql: %s", query))
 
-	if tx, ok := ctx.Value("Tx").(*sql.Tx); ok {
+	if tx, ok := ctx.Value("*sql.Tx").(*sql.Tx); ok {
 		return tx.QueryContext(ctx, query, args...)
 	}
 
@@ -54,7 +54,7 @@ func (c *Conn) QueryRow(query string, args ...any) *sql.Row {
 func (c *Conn) QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row {
 	c.logger.DebugContext(ctx, fmt.Sprintf("sql: %s", query))
 
-	if tx, ok := ctx.Value("Tx").(*sql.Tx); ok {
+	if tx, ok := ctx.Value("*sql.Tx").(*sql.Tx); ok {
 		return tx.QueryRowContext(ctx, query, args...)
 	}
 
@@ -64,7 +64,7 @@ func (c *Conn) QueryRowContext(ctx context.Context, query string, args ...any) *
 func (c *Conn) ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error) {
 	c.logger.DebugContext(ctx, fmt.Sprintf("sql: %s", query))
 
-	if tx, ok := ctx.Value("Tx").(*sql.Tx); ok {
+	if tx, ok := ctx.Value("*sql.Tx").(*sql.Tx); ok {
 		return tx.ExecContext(ctx, query, args...)
 	}
 

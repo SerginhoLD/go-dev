@@ -4,8 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"exampleapp/domain/entity"
-	"exampleapp/infrastructure/postgres"
+	"exampleapp/internal/domain/entity"
+	"exampleapp/internal/infrastructure/postgres"
 	"fmt"
 )
 

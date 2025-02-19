@@ -11,9 +11,9 @@ WORKDIR /usr/src/app
 #RUN go mod download && go mod verify
 
 COPY . .
-RUN wire && go build -o main
+RUN wire ./cmd/web && go build -o ./cmd/web/main ./cmd/web
 
-CMD ["./main"]
+CMD ["./cmd/web/main"]
 EXPOSE 8080
 
 # Download Go modules

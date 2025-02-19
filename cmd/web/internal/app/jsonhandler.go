@@ -1,11 +1,11 @@
-package controller
+package app
 
 import (
 	"encoding/json"
 	"net/http"
 )
 
-func NotFoundHandler(w http.ResponseWriter, req *http.Request) {
+func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
 	HttpJsonError(w, "Not Found", http.StatusNotFound)
 }
 

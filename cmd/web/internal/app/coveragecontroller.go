@@ -1,4 +1,4 @@
-package controller
+package app
 
 import (
 	"fmt"
@@ -13,7 +13,7 @@ func NewCoverageController() *CoverageController {
 	return &CoverageController{}
 }
 
-func (c *CoverageController) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+func (c *CoverageController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	file, err := os.ReadFile("coverage.html")
 
 	if err != nil {

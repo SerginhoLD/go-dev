@@ -1,10 +1,9 @@
-package io
+package app
 
 import (
 	"context"
-	"exampleapp/infrastructure/logger"
-	"exampleapp/infrastructure/postgres"
-	"exampleapp/io/controller"
+	"exampleapp/internal/infrastructure/logger"
+	"exampleapp/internal/infrastructure/postgres"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -18,20 +17,20 @@ type App struct {
 	logger                  *slog.Logger
 	metrics                 *logger.Metrics
 	conn                    *postgres.Conn
-	coverageController      *controller.CoverageController
-	homeController          *controller.HomeController
-	getProductController    *controller.GetProductController
-	createProductController *controller.CreateProductController
+	coverageController      *CoverageController
+	homeController          *HomeController
+	getProductController    *GetProductController
+	createProductController *CreateProductController
 }
 
-func NewApp(
+func New(
 	logger *slog.Logger,
 	metrics *logger.Metrics,
 	conn *postgres.Conn,
-	coverageController *controller.CoverageController,
-	homeController *controller.HomeController,
-	getProductController *controller.GetProductController,
-	createProductController *controller.CreateProductController,
+	coverageController *CoverageController,
+	homeController *HomeController,
+	getProductController *GetProductController,
+	createProductController *CreateProductController,
 ) *App {
 	return &App{
 		logger,
@@ -47,7 +46,7 @@ func NewApp(
 func (app *App) Run() {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/", controller.NotFoundHandler)
+	mux.HandleFunc("/", NotFoundHandler)
 	mux.HandleFunc("GET /{$}", app.homeController.ServeHTTP) // https://pkg.go.dev/net/http#hdr-Patterns-ServeMux
 	mux.HandleFunc("GET /products/{id}", app.getProductController.ServeHTTP)
 	mux.Handle("POST /products", app.transactionMiddleware(http.HandlerFunc(app.createProductController.ServeHTTP)))
@@ -91,12 +90,12 @@ func (app *App) transactionMiddleware(next http.Handler) http.Handler {
 		tx, err := app.conn.DB().BeginTx(r.Context(), nil)
 
 		if err != nil {
-			controller.HttpJsonError(w, err.Error(), http.StatusInternalServerError)
+			HttpJsonError(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		app.logger.DebugContext(r.Context(), fmt.Sprintf(`sql: begin "%s %s"`, r.Method, r.RequestURI))
-		*r = *r.WithContext(context.WithValue(r.Context(), "Tx", tx))
+		*r = *r.WithContext(context.WithValue(r.Context(), "*sql.Tx", tx))
 
 		defer func() {
 			if tx.Rollback() == nil {

@@ -2,7 +2,7 @@ package usecase
 
 import (
 	"context"
-	"exampleapp/domain/repository"
+	"exampleapp/internal/domain/repository"
 )
 
 type PaginateProductsQuery struct {

@@ -2,7 +2,7 @@ package usecase
 
 import (
 	"context"
-	"exampleapp/domain/entity"
+	"exampleapp/internal/domain/entity"
 	"fmt"
 	"testing"
 )

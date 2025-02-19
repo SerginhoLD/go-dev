@@ -1,9 +1,9 @@
-package controller
+package app
 
 import (
 	"encoding/json"
-	"exampleapp/domain/errors"
-	"exampleapp/domain/usecase"
+	"exampleapp/internal/domain/errors"
+	"exampleapp/internal/domain/usecase"
 	"net/http"
 )
 
@@ -16,16 +16,16 @@ func NewCreateProductController(errFactory errors.Factory, useCase *usecase.Crea
 	return &CreateProductController{errFactory, useCase}
 }
 
-func (c *CreateProductController) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+func (c *CreateProductController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var command usecase.CreateProductCommand
-	err := json.NewDecoder(req.Body).Decode(&command)
+	err := json.NewDecoder(r.Body).Decode(&command)
 
 	if err != nil {
-		HttpJsonError(w, c.errFactory.WrapContext(req.Context(), "CreateProduct: %w", err).Error(), http.StatusBadRequest)
+		HttpJsonError(w, c.errFactory.WrapContext(r.Context(), "CreateProduct: %w", err).Error(), http.StatusBadRequest)
 		return
 	}
 
-	result, err := c.useCase.Handle(req.Context(), command)
+	result, err := c.useCase.Handle(r.Context(), command)
 
 	if err != nil {
 		HttpJsonError(w, err.Error(), http.StatusBadRequest)

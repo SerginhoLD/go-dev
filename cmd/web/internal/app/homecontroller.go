@@ -1,7 +1,7 @@
-package controller
+package app
 
 import (
-	"exampleapp/domain/usecase"
+	"exampleapp/internal/domain/usecase"
 	"net/http"
 	"strconv"
 )
@@ -14,14 +14,14 @@ func NewHomeController(useCase *usecase.PaginateProductsUseCase) *HomeController
 	return &HomeController{useCase}
 }
 
-func (c *HomeController) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	page, _ := strconv.ParseUint(req.URL.Query().Get("page"), 10, 64)
+func (c *HomeController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	page, _ := strconv.ParseUint(r.URL.Query().Get("page"), 10, 64)
 
 	if page == 0 {
 		page = 1
 	}
 
-	models := c.useCase.Handle(req.Context(), usecase.PaginateProductsQuery{Page: page, Limit: 2})
+	models := c.useCase.Handle(r.Context(), usecase.PaginateProductsQuery{Page: page, Limit: 2})
 
 	HttpJson(w, models, http.StatusOK)
 }

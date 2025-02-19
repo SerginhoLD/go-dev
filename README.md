@@ -22,3 +22,11 @@
 or
 
 `make coverage-html`
+
+## Слои
+
+`./cmd/web` -> `./internal/infrastructure` -> `./internal/domain`
+
+* `./cmd/web` Ввод/Вывод
+* `./internal/infrastructure` Реализация интерфейсов и вспомогательные компоненты
+* `./internal/domain` Доменная область (Entities + UseCases)
