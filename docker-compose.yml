@@ -4,13 +4,25 @@ services:
     restart: unless-stopped
     build:
       context: .
-      dockerfile: ./cmd/web/Dockerfile
+      dockerfile: Dockerfile
     ports:
       - "127.0.0.90:80:8080"
     environment:
       PS1: "\\u:\\w$$ "
     depends_on:
       - postgres
+
+  cron:
+    container_name: go-dev-cron
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: "./cmd/scheduler/main"
+    environment:
+      PS1: "\\u:\\w$$ "
+    depends_on:
+      - app
 
   postgres:
     container_name: go-dev-db

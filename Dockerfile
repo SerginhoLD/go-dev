@@ -11,10 +11,11 @@ WORKDIR /usr/src/app
 #RUN go mod download && go mod verify
 
 COPY . .
-RUN wire ./cmd/web && go build -o ./cmd/web/main ./cmd/web
+RUN wire ./cmd/web && go build -o ./cmd/web/main ./cmd/web \
+    && wire ./cmd/scheduler && go build -o ./cmd/scheduler/main ./cmd/scheduler
 
 CMD ["./cmd/web/main"]
-EXPOSE 8080
+#EXPOSE 8080
 
 # Download Go modules
 #COPY go.mod go.sum ./
