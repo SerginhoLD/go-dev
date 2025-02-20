@@ -3,6 +3,7 @@ package logger
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"github.com/google/uuid"
 	"io"
 	"log/slog"
@@ -24,7 +25,14 @@ func (h *Handler) Enabled(ctx context.Context, level slog.Level) bool {
 	return h.handler.Enabled(ctx, level)
 }
 
-func (h *Handler) Handle(ctx context.Context, r slog.Record) error {
+func (h *Handler) Handle(ctx context.Context, r slog.Record) (err error) {
+	defer func() {
+		if rec := recover(); rec != nil {
+			err = errors.New("!LOG")
+			// логирование не должно приводить к падению приложения
+		}
+	}()
+
 	record := slog.NewRecord(r.Time, r.Level, r.Message, r.PC)
 	contextMap := make(map[string]any)
 
