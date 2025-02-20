@@ -73,7 +73,7 @@ func (app *App) logMiddleware(next http.Handler) http.Handler {
 
 		// изначально r.Pattern не заполнен
 		defer func() {
-			app.logger.DebugContext(r.Context(), fmt.Sprintf(`Response "%s"`, r.Pattern), slog.Int("statusCode", logResponseWriter.StatusCode))
+			app.logger.DebugContext(r.Context(), fmt.Sprintf(`server: response "%s"`, r.Pattern), slog.Int("statusCode", logResponseWriter.StatusCode))
 			app.metrics.Add("app_http_request_duration_ms", float64(time.Since(start).Milliseconds()), r.Pattern, strconv.Itoa(logResponseWriter.StatusCode))
 		}()
 
@@ -115,6 +115,11 @@ func (app *App) transactionMiddleware(next http.Handler) http.Handler {
 		}()
 
 		defer func() {
+			if rec := recover(); rec != nil {
+				w.(*LogResponseWriter).StatusCode = http.StatusInternalServerError
+				panic(rec) // вызываются все предыдущее defer
+			}
+
 			if w.(*LogResponseWriter).StatusCode < 400 {
 				errCommit := tx.Commit()
 

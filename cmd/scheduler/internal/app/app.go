@@ -2,6 +2,8 @@ package app
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"exampleapp/internal/infrastructure/postgres"
 	"fmt"
 	"github.com/go-co-op/gocron/v2"
@@ -53,7 +55,13 @@ func (app *Scheduler) cron(taskName string, crontab string, next func(context.Co
 	_, err := app.scheduler.NewJob(gocron.CronJob(crontab, false), gocron.NewTask(func() {
 		requestId, _ := uuid.NewV7()
 		ctx := context.WithValue(context.Background(), "X-Request-ID", requestId.String())
-		app.logger.DebugContext(ctx, fmt.Sprintf("scheduler: run %s", taskName))
+		ctx = context.WithValue(ctx, "SchedulerTaskName", taskName)
+		app.logger.DebugContext(ctx, fmt.Sprintf(`scheduler: run "%s"`, taskName))
+
+		defer func() {
+			app.logger.DebugContext(ctx, fmt.Sprintf(`scheduler: done "%s"`, taskName))
+		}()
+
 		next(ctx)
 	}))
 
@@ -71,16 +79,31 @@ func (app *Scheduler) transactionMiddleware(next func(context.Context)) func(con
 			panic(err)
 		}
 
-		app.logger.DebugContext(ctx, `sql: begin`)
+		app.logger.DebugContext(ctx, fmt.Sprintf(`sql: begin "%s"`, ctx.Value("SchedulerTaskName")))
 		ctx = context.WithValue(ctx, "*sql.Tx", tx)
 
 		defer func() {
-			if r := recover(); r != nil {
-				app.logger.DebugContext(ctx, `sql: rollback`)
-				panic(r)
-			} else {
-				app.logger.DebugContext(ctx, `sql: commit`)
+			errRollback := tx.Rollback()
+
+			if errRollback == nil {
+				app.logger.DebugContext(ctx, fmt.Sprintf(`sql: rollback "%s"`, ctx.Value("SchedulerTaskName")))
+			} else if !errors.Is(errRollback, sql.ErrTxDone) {
+				panic(errRollback)
 			}
+		}()
+
+		defer func() {
+			if r := recover(); r != nil {
+				panic(r) // вызываются все предыдущее defer
+			}
+
+			errCommit := tx.Commit()
+
+			if errCommit != nil {
+				panic(errCommit)
+			}
+
+			app.logger.DebugContext(ctx, fmt.Sprintf(`sql: commit "%s"`, ctx.Value("SchedulerTaskName")))
 		}()
 
 		next(ctx)
