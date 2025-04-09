@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"log/slog"
 	"os"
+	_ "time/tzdata"
 )
 
 type Scheduler struct {

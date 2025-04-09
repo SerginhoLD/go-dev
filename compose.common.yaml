@@ -1,0 +1,9 @@
+services:
+  app:
+    image: srgiz/go-dev:latest
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      PS1: "\\u:\\w$$ "
