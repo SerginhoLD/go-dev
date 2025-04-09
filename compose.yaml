@@ -1,26 +1,18 @@
 services:
   app:
+    extends:
+      file: compose.common.yaml
+      service: app
     container_name: go-dev-app
-    restart: unless-stopped
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "127.0.0.90:80:8080"
-    environment:
-      PS1: "\\u:\\w$$ "
     depends_on:
       - postgres
 
   cron:
+    extends:
+      file: compose.common.yaml
+      service: app
     container_name: go-dev-cron
-    restart: unless-stopped
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: "./cmd/scheduler/main"
-    environment:
-      PS1: "\\u:\\w$$ "
+    command: "./build/scheduler"
     depends_on:
       - app
 
@@ -28,8 +20,6 @@ services:
     container_name: go-dev-db
     restart: unless-stopped
     image: postgres:17.2-alpine3.21
-    ports:
-      - "127.0.0.90:5432:5432"
     environment:
       POSTGRES_PASSWORD: root
     volumes:

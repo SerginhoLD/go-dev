@@ -1,6 +1,6 @@
 ## Запуск
 
-* `docker-compose up -d --build`
+* `docker compose up -d` (create `compose.override.yaml`)
 * `docker exec -i -t go-dev-app sh`
 * `make migrate`
 
@@ -17,11 +17,7 @@
 
 ## Тесты
 
-`make test`
-
-or
-
-`make coverage-html`
+`make test` or `make coverage-html`
 
 ## Слои
 

@@ -1,4 +1,5 @@
 .DEFAULT_GOAL := help
+.PHONY: help build test # fix "is up to date"
 
 help: ## Show this help (default)
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(firstword $(MAKEFILE_LIST)) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
@@ -21,7 +22,14 @@ coverage-html: ## Coverage html
 	@go tool cover -html=coverage.out -o coverage.html
 
 
-name := app
+name := 'app'
 
-create-migration: ## Creates new migration file with the current timestamp
+create-migration: ## Create new migration (name=app)
 	@goose create $(name) sql
+
+
+app := 'web'
+
+build: ## Build application (app=web|scheduler)
+	@wire ./cmd/$(app)
+	@go build -o ./build/$(app) ./cmd/$(app)
