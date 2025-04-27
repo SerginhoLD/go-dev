@@ -5,7 +5,7 @@ services:
       service: app
     container_name: go-dev-app
     depends_on:
-      - postgres
+      - postgres-slave1
 
   cron:
     extends:
@@ -16,15 +16,32 @@ services:
     depends_on:
       - app
 
-  postgres:
-    container_name: go-dev-db
-    restart: unless-stopped
-    image: postgres:17.2-alpine3.21
+  postgres-master:
+    extends:
+      file: compose.common.yaml
+      service: postgres
+    container_name: go-dev-db-master
     environment:
-      POSTGRES_PASSWORD: root
+      POSTGRESQL_REPLICATION_MODE: master
     volumes:
-      - go-dev-postgres17:/var/lib/postgresql/data
+      - go-dev-postgres17-master:/bitnami/postgresql
+
+  postgres-slave1:
+    extends:
+      file: compose.common.yaml
+      service: postgres
+    container_name: go-dev-db-slave1
+    environment:
+      POSTGRESQL_REPLICATION_MODE: slave
+      POSTGRESQL_MASTER_HOST: postgres-master
+      POSTGRESQL_MASTER_PORT_NUMBER: 5432
+    volumes:
+      - go-dev-postgres17-slave1:/bitnami/postgresql
+    depends_on:
+      - postgres-master
 
 volumes:
-  go-dev-postgres17:
-    name: go-dev-postgres17
+  go-dev-postgres17-master:
+    name: go-dev-postgres17-master
+  go-dev-postgres17-slave1:
+    name: go-dev-postgres17-slave1

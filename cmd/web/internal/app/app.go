@@ -7,13 +7,14 @@ import (
 	"exampleapp/internal/infrastructure/logger"
 	"exampleapp/internal/infrastructure/postgres"
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"log/slog"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type App struct {
@@ -94,7 +95,7 @@ func (app *App) transactionMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		tx, err := app.conn.DB().BeginTx(r.Context(), nil)
+		tx, err := app.conn.Master().BeginTx(r.Context(), nil)
 
 		if err != nil {
 			HttpJsonError(w, err.Error(), http.StatusInternalServerError)

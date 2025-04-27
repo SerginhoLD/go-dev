@@ -3,6 +3,10 @@ services:
     ports:
       - "127.0.0.90:80:8080"
 
-  postgres:
+  postgres-master:
     ports:
       - "127.0.0.90:5432:5432"
+
+  postgres-slave1:
+    ports:
+      - "127.0.0.90:54321:5432"

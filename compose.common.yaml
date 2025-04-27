@@ -7,3 +7,13 @@ services:
       dockerfile: Dockerfile
     environment:
       PS1: "\\u:\\w$$ "
+
+  postgres:
+    image: bitnami/postgresql:17.4.0-debian-12-r11
+    restart: unless-stopped
+    environment:
+      POSTGRESQL_PASSWORD: root
+      POSTGRESQL_REPLICATION_USER: repl_user
+      POSTGRESQL_REPLICATION_PASSWORD: repl_password
+      #POSTGRESQL_LOG_HOSTNAME: true
+      #POSTGRESQL_PGAUDIT_LOG: READ,WRITE

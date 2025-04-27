@@ -4,36 +4,40 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	_ "github.com/lib/pq"
 	"log/slog"
 	"os"
+
+	_ "github.com/lib/pq"
 )
 
 type Conn struct {
-	db     *sql.DB
 	logger *slog.Logger
+	db     []*sql.DB
 }
 
 func NewConn(logger *slog.Logger) *Conn {
-	db, err := sql.Open("postgres", os.Getenv("GOOSE_DBSTRING"))
+	master, err := sql.Open("postgres", os.Getenv("GOOSE_DBSTRING"))
 
 	if err != nil {
 		panic(err)
 	}
 
-	return &Conn{db, logger}
+	slave1, err := sql.Open("postgres", os.Getenv("GOOSE_DBSTRING_SLAVE1"))
+
+	if err != nil {
+		master.Close()
+		panic(err)
+	}
+
+	return &Conn{logger, []*sql.DB{master, slave1}}
 }
 
 //func (c *Conn) Close() error {
 //	return c.db.Close()
 //}
 
-func (c *Conn) DB() *sql.DB {
-	return c.db
-}
-
-func (c *Conn) Query(query string, args ...any) (*sql.Rows, error) {
-	return c.db.QueryContext(context.Background(), query, args...)
+func (c *Conn) Master() *sql.DB {
+	return c.db[0]
 }
 
 func (c *Conn) QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error) {
@@ -43,11 +47,7 @@ func (c *Conn) QueryContext(ctx context.Context, query string, args ...any) (*sq
 		return tx.QueryContext(ctx, query, args...)
 	}
 
-	return c.db.QueryContext(ctx, query, args...)
-}
-
-func (c *Conn) QueryRow(query string, args ...any) *sql.Row {
-	return c.db.QueryRowContext(context.Background(), query, args...)
+	return c.db[1].QueryContext(ctx, query, args...)
 }
 
 func (c *Conn) QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row {
@@ -57,7 +57,7 @@ func (c *Conn) QueryRowContext(ctx context.Context, query string, args ...any) *
 		return tx.QueryRowContext(ctx, query, args...)
 	}
 
-	return c.db.QueryRowContext(ctx, query, args...)
+	return c.db[1].QueryRowContext(ctx, query, args...)
 }
 
 func (c *Conn) ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error) {
@@ -67,5 +67,5 @@ func (c *Conn) ExecContext(ctx context.Context, query string, args ...any) (sql.
 		return tx.ExecContext(ctx, query, args...)
 	}
 
-	return c.db.ExecContext(ctx, query, args...)
+	return c.db[0].ExecContext(ctx, query, args...)
 }

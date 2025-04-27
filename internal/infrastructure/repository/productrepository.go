@@ -19,7 +19,7 @@ func NewProductRepositoryImpl(conn *postgres.Conn) *ProductRepositoryImpl {
 
 func (r *ProductRepositoryImpl) Find(ctx context.Context, id uint64) *entity.Product {
 	product := new(entity.Product)
-	err := r.conn.QueryRowContext(ctx, "select id, name, price from products where id = $1", id).Scan(&product.Id, &product.Name, &product.Price)
+	err := r.conn.QueryRowContext(ctx, `SELECT id, name, price FROM products WHERE id = $1`, id).Scan(&product.Id, &product.Name, &product.Price)
 
 	switch {
 	case errors.Is(err, sql.ErrNoRows):
@@ -39,7 +39,7 @@ func (r *ProductRepositoryImpl) Find(ctx context.Context, id uint64) *entity.Pro
 
 func (r *ProductRepositoryImpl) FindByName(ctx context.Context, name string) *entity.Product {
 	product := new(entity.Product)
-	err := r.conn.QueryRowContext(ctx, "select id, name, price from products where name = $1", name).Scan(&product.Id, &product.Name, &product.Price)
+	err := r.conn.QueryRowContext(ctx, `SELECT id, name, price FROM products WHERE name = $1`, name).Scan(&product.Id, &product.Name, &product.Price)
 
 	switch {
 	case errors.Is(err, sql.ErrNoRows):
@@ -53,7 +53,8 @@ func (r *ProductRepositoryImpl) FindByName(ctx context.Context, name string) *en
 
 func (r *ProductRepositoryImpl) Paginate(ctx context.Context, page uint64, limit uint64) ([]*entity.Product, uint64) {
 	var total uint64
-	err := r.conn.QueryRowContext(ctx, "select count(*) from products").Scan(&total)
+
+	err := r.conn.QueryRowContext(ctx, `SELECT count(*) FROM products`).Scan(&total)
 
 	if err != nil {
 		panic(err)
@@ -63,7 +64,7 @@ func (r *ProductRepositoryImpl) Paginate(ctx context.Context, page uint64, limit
 		return []*entity.Product{}, 0
 	}
 
-	rows, err := r.conn.QueryContext(ctx, fmt.Sprintf("SELECT id, name, price from products limit %d offset %d", limit, (page-1)*limit))
+	rows, err := r.conn.QueryContext(ctx, fmt.Sprintf(`SELECT id, name, price FROM products LIMIT %d OFFSET %d`, limit, (page-1)*limit))
 
 	if err != nil {
 		panic(err)
@@ -87,7 +88,7 @@ func (r *ProductRepositoryImpl) Paginate(ctx context.Context, page uint64, limit
 }
 
 func (r *ProductRepositoryImpl) Create(ctx context.Context, product *entity.Product) {
-	err := r.conn.QueryRowContext(ctx, "insert into products (name, price) values ($1, $2) RETURNING id", product.Name, product.Price).Scan(&product.Id)
+	err := r.conn.QueryRowContext(ctx, `INSERT INTO products (name, price) VALUES ($1, $2) RETURNING id`, product.Name, product.Price).Scan(&product.Id)
 
 	if err != nil {
 		panic(err)

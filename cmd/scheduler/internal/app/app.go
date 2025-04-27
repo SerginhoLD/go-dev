@@ -6,11 +6,12 @@ import (
 	"errors"
 	"exampleapp/internal/infrastructure/postgres"
 	"fmt"
-	"github.com/go-co-op/gocron/v2"
-	"github.com/google/uuid"
 	"log/slog"
 	"os"
 	_ "time/tzdata"
+
+	"github.com/go-co-op/gocron/v2"
+	"github.com/google/uuid"
 )
 
 type Scheduler struct {
@@ -73,7 +74,7 @@ func (app *Scheduler) cron(taskName string, crontab string, next func(context.Co
 
 func (app *Scheduler) transactionMiddleware(next func(context.Context)) func(context.Context) {
 	return func(ctx context.Context) {
-		tx, err := app.conn.DB().BeginTx(ctx, nil)
+		tx, err := app.conn.Master().BeginTx(ctx, nil)
 
 		if err != nil {
 			app.logger.ErrorContext(ctx, fmt.Sprintf("scheduler: %s", err.Error()))
