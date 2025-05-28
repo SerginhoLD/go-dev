@@ -8,6 +8,8 @@ import (
 	"log/slog"
 	"regexp"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestLog(t *testing.T) {
@@ -46,26 +48,18 @@ func TestLog(t *testing.T) {
 			r := regexp.MustCompile(`{"time":".+?",(.+),"id":".+?"}\n`)
 			got := r.ReplaceAllString(b.String(), "$1")
 
-			if tt.json != got {
-				t.Errorf("Expected `%s`, got `%s`", tt.json, got)
-			}
+			assert.Equal(t, got, tt.json)
 		})
 	}
 }
 
 func TestRequestId(t *testing.T) {
-	t.Run("X-Request-ID", func(t *testing.T) {
-		var b bytes.Buffer
-		logger := slog.New(NewHandler(io.Writer(&b)))
-		logger.DebugContext(context.WithValue(context.Background(), "X-Request-ID", "01951302-6642-7007-9539-4c0cc944e4eb"), "Test")
+	var b bytes.Buffer
+	logger := slog.New(NewHandler(io.Writer(&b)))
+	logger.DebugContext(context.WithValue(context.Background(), "X-Request-ID", "01951302-6642-7007-9539-4c0cc944e4eb"), "Test")
 
-		r := regexp.MustCompile(`{"time":".+?",(.+),"id":".+?"}\n`)
-		got := r.ReplaceAllString(b.String(), "$1")
+	r := regexp.MustCompile(`{"time":".+?",(.+),"id":".+?"}\n`)
+	got := r.ReplaceAllString(b.String(), "$1")
 
-		expect := `"level":"DEBUG","msg":"Test","X-Request-ID":"01951302-6642-7007-9539-4c0cc944e4eb"`
-
-		if expect != got {
-			t.Errorf("Expected `%s`, got `%s`", expect, got)
-		}
-	})
+	assert.Equal(t, got, `"level":"DEBUG","msg":"Test","X-Request-ID":"01951302-6642-7007-9539-4c0cc944e4eb"`)
 }

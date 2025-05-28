@@ -1,17 +1,19 @@
 package validator
 
 import (
-	"github.com/go-playground/validator/v10"
+	"exampleapp/internal/domain/validator"
+
+	playground_validator "github.com/go-playground/validator/v10"
 )
 
 type ValidatorImpl struct {
-	validate *validator.Validate
+	validate *playground_validator.Validate
 }
 
-func New() *ValidatorImpl {
-	return &ValidatorImpl{validator.New()}
+func New() validator.Validator {
+	return &ValidatorImpl{playground_validator.New()}
 }
 
-func (v *ValidatorImpl) Validate(s interface{}) error {
+func (v *ValidatorImpl) Validate(s any) error {
 	return v.validate.Struct(s)
 }

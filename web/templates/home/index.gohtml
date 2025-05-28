@@ -1,0 +1,113 @@
+{{/* home/index */}}
+{{define "title"}}Список объектов{{end}}
+
+{{define "content"}}
+  <form class="mt-4 mb-4">
+    <div class="hstack gap-3 mb-3">
+      <div class="form-floating">
+        <input type="search" class="form-control" id="f-search" name="q" value="{{if .Query.Search}}{{.Query.Search}}{{end}}">
+        <label for="f-search">Поиск</label>
+      </div>
+      <div class="form-floating">
+        <input class="form-control" id="f-metro" name="metro" list="data-metro" value="{{if .Query.Metro}}{{.Query.Metro}}{{end}}">
+        <label for="f-metro">Метро</label>
+        <datalist id="data-metro">
+          {{range .Data.Metro}}
+            <option value="{{.}}">{{.}}</option>
+          {{end}}
+        </datalist>
+      </div>
+      <div class="form-floating">
+        <input type="number" min="0" class="form-control" id="f-min" name="min" value="{{if .Query.PriceFrom}}{{.Query.PriceFrom}}{{end}}">
+        <label for="f-min">Цена от ₽</label>
+      </div>
+      <div class="form-floating">
+        <input type="number" min="0" class="form-control" id="f-max" name="max" value="{{if .Query.PriceTo}}{{.Query.PriceTo}}{{end}}">
+        <label for="f-max">Цена до ₽</label>
+      </div>
+      <div class="form-floating">
+        <input type="number" min="0" class="form-control" id="f-sizeFrom" name="sizeFrom" value="{{if .Query.SizeFrom}}{{.Query.SizeFrom}}{{end}}">
+        <label for="f-sizeFrom">Площадь от м²</label>
+      </div>
+      <div class="form-floating">
+        <input type="number" min="0" class="form-control" id="f-sizeTo" name="sizeTo" value="{{if .Query.SizeTo}}{{.Query.SizeTo}}{{end}}">
+        <label for="f-sizeTo">Площадь до м²</label>
+      </div>
+    </div>
+    <div class="hstack gap-3">
+      <div class="form-floating">
+        <select class="form-select" id="f-loc" name="loc">
+          <option value="">- Выбрать -</option>
+          <option value="1"{{if eq .Query.Loc 1}} selected{{end}}>Центр</option>
+          <option value="2"{{if eq .Query.Loc 2}} selected{{end}}>Другое</option>
+        </select>
+        <label for="f-loc">Местоположение</label>
+      </div>
+      <div class="form-floating">
+        <select class="form-select" id="f-checked" name="checked">
+          <option value="">- Выбрать -</option>
+          <option value="-1"{{if eq .Query.Checked -1}} selected{{end}}>Нет</option>
+          <option value="1"{{if eq .Query.Checked 1}} selected{{end}}>Да</option>
+        </select>
+        <label for="f-checked">✓ Проверено</label>
+      </div>
+      <div class="form-floating">
+        <select class="form-select" id="f-rooms" name="rooms">
+          <option value="">- Выбрать -</option>
+          {{range .Data.Rooms}}
+            <option value="{{.}}"{{if eq . $.Query.Rooms}} selected{{end}}>{{.}}</option>
+          {{end}}
+        </select>
+        <label for="f-rooms">Комнаты</label>
+      </div>
+      <div>
+        <button type="submit" class="btn btn-lg btn-primary">Найти</button>
+      </div>
+      <div>
+        <a href="?" class="btn btn-lg btn-secondary">Сбросить</a>
+      </div>
+    </div>
+  </form>
+
+  <h1 class="mb-3">Список объектов ({{.Data.Total}})</h2>
+
+  {{range .Data.Objects}}
+  <div class="card mb-3{{if .Checked}} border-success2{{end}}">
+    <div class="card-body">
+      <h4 class="card-title">{{.Title}}{{if .Checked}} <span class="badge text-success-emphasis">✓</span>{{end}}</h4>
+      <p class="card-text hstack gap-3 text-body-secondary">
+        <small>м {{.Metro}}</small>
+        <small>{{.Rooms}} комн</small>
+        <small>{{format.P_1f .Size}} м²</small>
+        <small>обн {{format.Time .UpdatedAt}}</small>
+      </p>
+      <p class="card-text"><span class="h5">{{format.Price .Price}} ₽</span></p>
+      <a href="{{route.TargetObj .Id}}" target="_blank" class="btn btn-outline-secondary">Подробнее</a>
+    </div>
+  </div>
+  {{end}}
+
+  <ul class="pagination mt-4 mb-4">
+    <li class="page-item{{if eq .Data.Page 1}} disabled{{end}}">
+      <a class="page-link" href="{{route.Page 1}}">
+        <span aria-hidden="true">&laquo;</span>
+      </a>
+    </li>
+    {{range $n := math.Pagination .Data.Page .Data.Limit .Data.Total}}
+      {{if eq $n 0}}
+        <li class="page-item disabled"><span class="page-link">...</span></li>
+      {{else}}
+        {{if eq $.Data.Page $n}}
+          <li class="page-item active"><span class="page-link">{{$n}}</span></li>
+        {{else}}
+          <li class="page-item"><a class="page-link" href="{{route.Page $n}}">{{$n}}</a></li>
+        {{end}}
+      {{end}}
+    {{end}}
+    <li class="page-item">
+      <a class="page-link" href="{{route.Page (math.SumUint64 .Data.Page 1)}}">
+        <span aria-hidden="true">&raquo;</span>
+      </a>
+    </li>
+  </ul>
+{{end}}

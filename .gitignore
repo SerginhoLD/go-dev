@@ -1,5 +1,7 @@
 /.idea/
+/.vscode/
 /.env.local
+/build
 /compose.override.yaml
 /coverage.*
 *_gen.go

@@ -1,0 +1,17 @@
+{{define "base"}}
+<!doctype html>
+<html lang="ru" data-bs-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="/assets/bootstrap.min.css" rel="stylesheet">
+  <title>{{template "title" .}}</title>
+</head>
+<body>
+  <div class="container-xxl">
+    {{template "content" .}}
+  </div>
+  <script src="/assets/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+{{end}}

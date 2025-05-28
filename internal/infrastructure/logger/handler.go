@@ -4,10 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/google/uuid"
 	"io"
 	"log/slog"
+	"os"
+
+	"github.com/google/uuid"
 )
+
+func init() {
+	slog.SetDefault(slog.New(NewHandler(os.Stderr)))
+}
 
 type Handler struct {
 	handler slog.Handler

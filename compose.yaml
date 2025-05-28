@@ -3,45 +3,69 @@ services:
     extends:
       file: compose.common.yaml
       service: app
-    container_name: go-dev-app
+    container_name: vep-app
+    volumes:
+      - ./.env:/srv/.env
+      - ./web:/srv/web
+      #- ./migrations:/srv/migrations
     depends_on:
-      - postgres-slave1
+      - manticore
 
   cron:
     extends:
       file: compose.common.yaml
       service: app
-    container_name: go-dev-cron
+    container_name: vep-cron
     command: "./build/scheduler"
     depends_on:
       - app
+      - keydb
 
-  postgres-master:
+  consumer-pages:
     extends:
       file: compose.common.yaml
-      service: postgres
-    container_name: go-dev-db-master
-    environment:
-      POSTGRESQL_REPLICATION_MODE: master
-    volumes:
-      - go-dev-postgres17-master:/bitnami/postgresql
-
-  postgres-slave1:
-    extends:
-      file: compose.common.yaml
-      service: postgres
-    container_name: go-dev-db-slave1
-    environment:
-      POSTGRESQL_REPLICATION_MODE: slave
-      POSTGRESQL_MASTER_HOST: postgres-master
-      POSTGRESQL_MASTER_PORT_NUMBER: 5432
-    volumes:
-      - go-dev-postgres17-slave1:/bitnami/postgresql
+      service: app
+    container_name: vep-consumer-pages
+    command: "./build/consumer gr0 objects"
     depends_on:
-      - postgres-master
+      - cron
+
+  manticore:
+    container_name: vep-manticore
+    image: manticoresearch/manticore:9.3.2
+    environment:
+      - EXTRA=1
+    restart: unless-stopped
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 65535
+        hard: 65535
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - vep-manticore-9:/var/lib/manticore
+
+  keydb:
+    container_name: vep-keydb
+    image: eqalpha/keydb:alpine_x86_64_v6.3.4
+    restart: unless-stopped
+    volumes:
+      - vep-keydb-6:/data
+
+  redisinsight:
+    container_name: vep-redisinsight
+    image: redis/redisinsight:2.68.0
+    volumes:
+      - 'vep-redisinsight-2:/data'
+    depends_on:
+      - keydb
 
 volumes:
-  go-dev-postgres17-master:
-    name: go-dev-postgres17-master
-  go-dev-postgres17-slave1:
-    name: go-dev-postgres17-slave1
+  vep-manticore-9:
+    name: vep-manticore-9
+  vep-keydb-6:
+    name: vep-keydb-6
+  vep-redisinsight-2:
+    name: vep-redisinsight-2
