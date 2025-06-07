@@ -1,7 +1,7 @@
 //go:build wireinject
 // +build wireinject
 
-package internal
+package migrate
 
 import (
 	//"exampleapp/internal/infrastructure/di"

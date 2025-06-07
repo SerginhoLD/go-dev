@@ -82,14 +82,14 @@
         <small>обн {{format.Time .UpdatedAt}}</small>
       </p>
       <p class="card-text"><span class="h5">{{format.Price .Price}} ₽</span></p>
-      <a href="{{route.TargetObj .Id}}" target="_blank" class="btn btn-outline-secondary">Подробнее</a>
+      <a href="{{$.route.TargetObj .Id}}" target="_blank" class="btn btn-outline-secondary">Подробнее</a>
     </div>
   </div>
   {{end}}
 
   <ul class="pagination mt-4 mb-4">
     <li class="page-item{{if eq .Data.Page 1}} disabled{{end}}">
-      <a class="page-link" href="{{route.Page 1}}">
+      <a class="page-link" href="{{$.route.Page 1}}">
         <span aria-hidden="true">&laquo;</span>
       </a>
     </li>
@@ -100,12 +100,12 @@
         {{if eq $.Data.Page $n}}
           <li class="page-item active"><span class="page-link">{{$n}}</span></li>
         {{else}}
-          <li class="page-item"><a class="page-link" href="{{route.Page $n}}">{{$n}}</a></li>
+          <li class="page-item"><a class="page-link" href="{{$.route.Page $n}}">{{$n}}</a></li>
         {{end}}
       {{end}}
     {{end}}
     <li class="page-item">
-      <a class="page-link" href="{{route.Page (math.SumUint64 .Data.Page 1)}}">
+      <a class="page-link" href="{{$.route.Page (math.SumUint64 .Data.Page 1)}}">
         <span aria-hidden="true">&raquo;</span>
       </a>
     </li>

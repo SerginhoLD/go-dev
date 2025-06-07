@@ -1,7 +1,7 @@
 package main
 
 import (
-	"exampleapp/cmd/consumer/internal"
+	"exampleapp/internal/app/consumer"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -10,6 +10,6 @@ import (
 func main() {
 	godotenv.Load(".env.local")
 	godotenv.Load(".env")
-	app := internal.InitializeApp(internal.GroupName(os.Args[1]), internal.StreamName(os.Args[2]))
+	app := consumer.Initialize(consumer.GroupName(os.Args[1]), consumer.StreamName(os.Args[2]))
 	app.Run()
 }

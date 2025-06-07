@@ -1,21 +1,21 @@
 //go:build wireinject
 // +build wireinject
 
-package internal
+package scheduler
 
 import (
+	"exampleapp/internal/app/scheduler/internal"
 	"exampleapp/internal/infrastructure/di"
 
 	"github.com/google/wire"
 )
 
-func InitializeApp() *App {
+func Initialize() *scheduler {
 	wire.Build(
-		NewApp,
+		new,
+		internal.NewStartParseJob,
 		di.Set,
-		NewCoverageController,
-		NewHomeController,
 	)
 
-	return &App{}
+	return &scheduler{}
 }

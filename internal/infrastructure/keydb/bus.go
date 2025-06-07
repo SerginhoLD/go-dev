@@ -14,7 +14,7 @@ func (bus *Stream) Send(ctx context.Context, msg any) {
 		panic(err)
 	}
 
-	err = bus.Publish(ctx, PublishOpts{Stream: "objects"}, string(bytes), "type", fmt.Sprintf("%T", msg)) // todo: type
+	err = bus.Publish(ctx, "objects", string(bytes), &Header{"type", fmt.Sprintf("%T", msg)}) // todo: type
 
 	if err != nil {
 		panic(err)

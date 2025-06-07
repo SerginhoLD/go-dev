@@ -1,7 +1,7 @@
 package main
 
 import (
-	"exampleapp/cmd/scheduler/internal"
+	"exampleapp/internal/app/scheduler"
 
 	"github.com/joho/godotenv"
 )
@@ -9,6 +9,6 @@ import (
 func main() {
 	godotenv.Load(".env.local")
 	godotenv.Load(".env")
-	app := internal.InitializeScheduler()
+	app := scheduler.Initialize()
 	app.Run()
 }

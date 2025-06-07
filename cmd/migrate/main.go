@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"exampleapp/cmd/migrate/internal"
+	"exampleapp/internal/app/migrate"
 	"fmt"
 
 	"github.com/joho/godotenv"
@@ -12,7 +12,7 @@ func main() {
 	godotenv.Load(".env.local")
 	godotenv.Load(".env")
 
-	conn := internal.InitializeConn()
+	conn := migrate.InitializeConn()
 	defer conn.Close()
 
 	for _, sql := range list() {

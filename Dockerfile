@@ -13,7 +13,7 @@ RUN go mod download
 # Copy the actual code files and build the application
 COPY . .
 
-RUN make build app=web \
+RUN make build app=server \
     && make build app=migrate \
     && make build app=scheduler \
     && make build app=consumer
@@ -32,4 +32,4 @@ COPY web web
 COPY --from=builder /srv/build ./build
 
 #EXPOSE 8080
-CMD ["./build/web"]
+CMD ["./build/server"]

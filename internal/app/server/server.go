@@ -1,8 +1,9 @@
-package internal
+package server
 
 import (
 	"context"
 	"errors"
+	"exampleapp/internal/app/server/internal"
 	"exampleapp/internal/infrastructure/di"
 	"exampleapp/internal/infrastructure/logger"
 	"fmt"
@@ -16,31 +17,31 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-type App struct {
-	coverageController *CoverageController
-	homeController     *HomeController
+type server struct {
+	coverageController *internal.CoverageController
+	homeController     *internal.HomeController
 }
 
-func NewApp(
-	coverageController *CoverageController,
-	homeController *HomeController,
-) *App {
-	return &App{
+func new(
+	coverageController *internal.CoverageController,
+	homeController *internal.HomeController,
+) *server {
+	return &server{
 		coverageController,
 		homeController,
 	}
 }
 
-func (app *App) Run() {
+func (app *server) Run() {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/", NotFoundHandler) // https://pkg.go.dev/net/http#hdr-Patterns-ServeMux
+	mux.HandleFunc("/", internal.HtmlNotFoundHandler) // https://pkg.go.dev/net/http#hdr-Patterns-ServeMux
 	mux.HandleFunc("GET /{$}", app.homeController.ServeHTTP)
 	mux.Handle("GET /metrics", promhttp.Handler())
 	mux.HandleFunc("GET /coverage", app.coverageController.ServeHTTP)
 
 	mux.Handle("GET /assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("web/assets"))))
-	mux.HandleFunc("GET /assets/{$}", NotFoundHandler)
+	mux.HandleFunc("GET /assets/{$}", internal.HtmlNotFoundHandler)
 
 	slog.Debug(fmt.Sprintf("server: start (env=%s, ver=%s)", os.Getenv("APP_ENV"), di.Version))
 
@@ -50,7 +51,7 @@ func (app *App) Run() {
 	}
 }
 
-func (app *App) logMiddleware(next http.Handler) http.Handler {
+func (app *server) logMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		logResponseWriter := &logResponseWriter{http.StatusInternalServerError, w}

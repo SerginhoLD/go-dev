@@ -16,19 +16,24 @@ import (
 	"golang.org/x/text/message"
 )
 
-var tplCache = make(map[string]*template.Template)
+var tplCache = map[string]*template.Template{
+	"web/templates/error.gohtml": template.Must(template.ParseFiles("web/templates/error.gohtml")),
+}
 
-func HttpHtml(w http.ResponseWriter, r *http.Request, path string, v any, code int) {
+func HtmlNotFoundHandler(w http.ResponseWriter, r *http.Request) {
+	htmlErrorResponse(w, fmt.Sprintf("%d %s", http.StatusNotFound, "Not Found"), http.StatusNotFound)
+}
+
+func htmlResponse(w http.ResponseWriter, r *http.Request, path string, v map[string]any, code int) {
 	if _, hasCache := tplCache[path]; !hasCache {
 		tpl, err := template.New(path).Funcs(template.FuncMap{
 			"format":  func() *format { return &format{} },
 			"convert": func() *convert { return &convert{} },
 			"math":    func() *_math { return &_math{} },
-			"route":   func() *route { return &route{req: r} },
 		}).ParseFiles("web/templates/base.gohtml", path)
 
 		if err != nil {
-			HttpJsonError(w, err.Error(), http.StatusInternalServerError) // "Internal Server Error"
+			htmlErrorResponse(w, err.Error(), http.StatusInternalServerError) // "Internal Server Error" //http.StatusText()
 			return
 		}
 
@@ -36,16 +41,28 @@ func HttpHtml(w http.ResponseWriter, r *http.Request, path string, v any, code i
 	}
 
 	var b bytes.Buffer
+	v["route"] = &route{request: r}
 	err := tplCache[path].ExecuteTemplate(&b, "base", v)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError) // "Internal Server Error"
+		htmlErrorResponse(w, err.Error(), http.StatusInternalServerError) // "Internal Server Error" //http.StatusText()
 		return
 	}
 
-	w.Header().Del("Content-Length") // @see http.Error
-	w.WriteHeader(code)
+	htmlWriteHeaders(w, code)
 	b.WriteTo(w)
+}
+
+func htmlErrorResponse(w http.ResponseWriter, err string, code int) {
+	htmlWriteHeaders(w, code)
+	tplCache["web/templates/error.gohtml"].Execute(w, map[string]any{"msg": err})
+}
+
+func htmlWriteHeaders(w http.ResponseWriter, code int) {
+	w.Header().Del("Content-Length") // @see http.Error
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.WriteHeader(code)
 }
 
 type format struct{}
@@ -144,13 +161,13 @@ func (c *_math) Pagination(page uint64, limit uint64, total uint64) []uint64 {
 }
 
 type route struct {
-	req *http.Request
+	request *http.Request
 }
 
 // Возвращает ссылку на страницу относительно текущего url
 func (r *route) Page(page uint64) string {
 	cloneUrl := new(url.URL)
-	*cloneUrl = *r.req.URL
+	*cloneUrl = *r.request.URL
 
 	query := cloneUrl.Query()
 	query.Set("page", strconv.FormatUint(page, 10))

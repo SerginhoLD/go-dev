@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"maps"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -21,57 +22,58 @@ func NewStream(client *redis.Client) *Stream {
 	}
 }
 
-type PublishOpts struct {
-	Stream string
-	MaxLen int64
-}
+func (bus *Stream) Publish(ctx context.Context, stream string, payload string, opts ...option) error {
+	maxLen := int64(0)
+	headers := make(map[string]string)
 
-type ConsumeOpts struct {
-	Group       string
-	Stream      string
-	DelAfterAck bool
-}
-
-func (bus *Stream) Publish(ctx context.Context, opts PublishOpts, payload string, headers ...string) error {
-	if len(headers)%2 != 0 {
-		return errors.New("redis: invalid headers")
-	}
-
-	headersMap := make(map[string]string)
-
-	for k := range headers {
-		if k%2 == 0 {
-			headersMap[headers[k]] = headers[k+1]
+	for _, opt := range opts {
+		switch opt.typ() {
+		case "maxlen":
+			maxLen = int64(opt.val().(int64))
+		case "header":
+			maps.Copy(headers, opt.val().(map[string]string))
 		}
 	}
 
-	headersBytes, err := json.Marshal(headersMap)
+	headersBytes, err := json.Marshal(headers)
 
 	if err != nil {
 		return err
 	}
 
 	err = bus.client.XAdd(ctx, &redis.XAddArgs{
-		Stream: opts.Stream,
+		Stream: stream,
 		Values: map[string]any{
 			"payload": payload,
 			"headers": string(headersBytes),
 		},
-		MaxLen: opts.MaxLen,
+		MaxLen: maxLen,
 		Approx: true, // MAXLEN ~
 	}).Err()
 
 	if err != nil {
-		slog.ErrorContext(ctx, fmt.Sprintf(`redis: %s`, err.Error()), "stream", opts.Stream, "payload", payload, "headers", headers)
+		slog.ErrorContext(ctx, fmt.Sprintf(`redis: %s`, err.Error()), "stream", stream, "payload", payload, "headers", headers)
 		return err
 	} else {
-		slog.DebugContext(ctx, fmt.Sprintf(`redis: send %s`, opts.Stream), "stream", opts.Stream, "payload", payload, "headers", headers)
+		slog.DebugContext(ctx, fmt.Sprintf(`redis: send %s`, stream), "stream", stream, "payload", payload, "headers", headers)
 		return nil
 	}
 }
 
-func (bus *Stream) Consume(ctx context.Context, opts ConsumeOpts, callback func(context.Context, *Message) error) error {
-	err := bus.client.XGroupCreateMkStream(ctx, opts.Stream, opts.Group, "$").Err() // start: "$" - latest
+func (bus *Stream) Consume(ctx context.Context, group string, stream string, callback func(context.Context, *Message) error, opts ...option) error {
+	startId := "$" // start: "$" - latest, "0" - earliest
+	delAfterAck := false
+
+	for _, opt := range opts {
+		switch opt.typ() {
+		case "start_id":
+			startId = opt.val().(string)
+		case "del_after_ack":
+			delAfterAck = opt.val().(bool)
+		}
+	}
+
+	err := bus.client.XGroupCreateMkStream(ctx, stream, group, startId).Err()
 
 	if err != nil {
 		slog.ErrorContext(ctx, fmt.Sprintf(`redis: %s`, err))
@@ -91,8 +93,8 @@ func (bus *Stream) Consume(ctx context.Context, opts ConsumeOpts, callback func(
 		}
 
 		xStreams, err := bus.client.XReadGroup(ctx, &redis.XReadGroupArgs{
-			Group:    opts.Group,
-			Streams:  []string{opts.Stream, nextId},
+			Group:    group,
+			Streams:  []string{stream, nextId},
 			Consumer: "0",
 			Count:    1,
 			Block:    0,
@@ -114,7 +116,7 @@ func (bus *Stream) Consume(ctx context.Context, opts ConsumeOpts, callback func(
 			if !hasPayload {
 				slog.ErrorContext(ctx, fmt.Sprintf(`redis: unknown message "%s"`, xMessage.ID), "values", xMessage.Values)
 
-				if err = bus.client.XAck(ctx, opts.Stream, opts.Group, xMessage.ID).Err(); err != nil {
+				if err = bus.client.XAck(ctx, stream, group, xMessage.ID).Err(); err != nil {
 					slog.ErrorContext(ctx, err.Error())
 					return err
 				}
@@ -127,7 +129,7 @@ func (bus *Stream) Consume(ctx context.Context, opts ConsumeOpts, callback func(
 			if !hasHeaders {
 				slog.ErrorContext(ctx, fmt.Sprintf(`redis: unknown message "%s"`, xMessage.ID), "values", xMessage.Values)
 
-				if err = bus.client.XAck(ctx, opts.Stream, opts.Group, xMessage.ID).Err(); err != nil {
+				if err = bus.client.XAck(ctx, stream, group, xMessage.ID).Err(); err != nil {
 					slog.ErrorContext(ctx, err.Error())
 					return err
 				}
@@ -138,12 +140,12 @@ func (bus *Stream) Consume(ctx context.Context, opts ConsumeOpts, callback func(
 			headersMap := make(map[string]string)
 			json.Unmarshal([]byte(headers), &headersMap)
 
-			slog.DebugContext(ctx, fmt.Sprintf(`redis: read "%s"`, xMessage.ID), "group", opts.Group, "stream", opts.Stream, "payload", payload, "headers", headers)
+			slog.DebugContext(ctx, fmt.Sprintf(`redis: read "%s"`, xMessage.ID), "group", group, "stream", stream, "payload", payload, "headers", headers)
 
 			message := &Message{
 				client:  bus.client,
-				group:   &opts.Group,
-				stream:  &opts.Stream,
+				group:   &group,
+				stream:  &stream,
 				id:      &xMessage.ID,
 				payload: &payload,
 				headers: headersMap,
@@ -159,8 +161,8 @@ func (bus *Stream) Consume(ctx context.Context, opts ConsumeOpts, callback func(
 				return errors.New(logMsg)
 			}
 
-			if opts.DelAfterAck {
-				if err = bus.client.XDel(ctx, opts.Stream, xMessage.ID).Err(); err != nil {
+			if delAfterAck {
+				if err = bus.client.XDel(ctx, stream, xMessage.ID).Err(); err != nil {
 					slog.ErrorContext(ctx, err.Error())
 					return err
 				}

@@ -1,7 +1,7 @@
 //go:build wireinject
 // +build wireinject
 
-package internal
+package consumer
 
 import (
 	"exampleapp/internal/infrastructure/di"
@@ -9,11 +9,11 @@ import (
 	"github.com/google/wire"
 )
 
-func InitializeApp(group GroupName, stream StreamName) *App {
+func Initialize(group GroupName, stream StreamName) *consumer {
 	wire.Build(
-		NewApp,
+		newConsumer,
 		di.Set,
 	)
 
-	return &App{}
+	return &consumer{}
 }

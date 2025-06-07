@@ -22,7 +22,7 @@ func (c *HomeController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	err := c.decoder.Decode(&query, r.URL.Query())
 
 	if err != nil {
-		HttpJsonError(w, err.Error(), 400)
+		htmlErrorResponse(w, err.Error(), 400)
 		return
 	}
 
@@ -30,5 +30,5 @@ func (c *HomeController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		query.Page = 1
 	}
 
-	HttpHtml(w, r, "web/templates/home/index.gohtml", map[string]any{"Query": query, "Data": c.useCase.Handle(r.Context(), query)}, 200)
+	htmlResponse(w, r, "web/templates/home/index.gohtml", map[string]any{"Query": query, "Data": c.useCase.Handle(r.Context(), query)}, 200)
 }

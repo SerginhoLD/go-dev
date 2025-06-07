@@ -1,4 +1,4 @@
-package internal
+package consumer
 
 import (
 	"context"
@@ -17,31 +17,31 @@ import (
 type GroupName string  // for wire
 type StreamName string // for wire
 
-type App struct {
+type consumer struct {
 	group    string
 	stream   string
 	consumer *keydb.Stream
 	useCase  *usecase.ParseObjectsUseCase
 }
 
-func NewApp(
+func newConsumer(
 	group GroupName,
-	stream StreamName,
-	consumer *keydb.Stream,
+	streamName StreamName,
+	streamConsumer *keydb.Stream,
 	useCase *usecase.ParseObjectsUseCase,
-) *App {
-	return &App{
+) *consumer {
+	return &consumer{
 		group:    string(group),
-		stream:   string(stream),
-		consumer: consumer,
+		stream:   string(streamName),
+		consumer: streamConsumer,
 		useCase:  useCase,
 	}
 }
 
-func (app *App) Run() {
+func (app *consumer) Run() {
 	slog.Debug(fmt.Sprintf("consumer: start (env=%s, ver=%s)", os.Getenv("APP_ENV"), di.Version))
 
-	err := app.consumer.Consume(context.Background(), keydb.ConsumeOpts{Group: app.group, Stream: app.stream, DelAfterAck: true}, requestMiddleware(func(ctx context.Context, msg *keydb.Message) error {
+	err := app.consumer.Consume(context.Background(), app.group, app.stream, requestMiddleware(func(ctx context.Context, msg *keydb.Message) error {
 		switch msg.Headers()["type"] {
 		case "*messages.ParsePageMessage":
 			command := deserialize[messages.ParsePageMessage](msg.Payload())
@@ -55,7 +55,7 @@ func (app *App) Run() {
 		}
 
 		return msg.Ack(ctx)
-	}))
+	}), keydb.DelAfterAck(true))
 
 	if err != nil {
 		slog.Error(fmt.Sprintf("consumer: %s", err.Error()))

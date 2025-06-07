@@ -1,7 +1,8 @@
-package internal
+package scheduler
 
 import (
 	"context"
+	"exampleapp/internal/app/scheduler/internal"
 	"exampleapp/internal/infrastructure/di"
 	"fmt"
 	"log/slog"
@@ -14,23 +15,23 @@ import (
 	"github.com/google/uuid"
 )
 
-type Scheduler struct {
+type scheduler struct {
 	scheduler     gocron.Scheduler
-	startParseJob *StartParseJob
+	startParseJob *internal.StartParseJob
 }
 
-func NewApp(
-	startParseJob *StartParseJob,
-) *Scheduler {
+func new(
+	startParseJob *internal.StartParseJob,
+) *scheduler {
 	s, _ := gocron.NewScheduler()
 
-	return &Scheduler{
+	return &scheduler{
 		s,
 		startParseJob,
 	}
 }
 
-func (app *Scheduler) Run() {
+func (app *scheduler) Run() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
@@ -48,7 +49,7 @@ func (app *Scheduler) Run() {
 	}
 }
 
-func (app *Scheduler) cron(ctx context.Context, crontab string, taskName string, next func(context.Context)) {
+func (app *scheduler) cron(ctx context.Context, crontab string, taskName string, next func(context.Context)) {
 	// https://github.com/go-co-op/gocron/blob/e1b7d52/example_test.go#L617
 	_, err := app.scheduler.NewJob(gocron.CronJob(crontab, false), gocron.NewTask(app.requestMiddleware(taskName, next)), gocron.WithContext(ctx))
 
@@ -57,7 +58,7 @@ func (app *Scheduler) cron(ctx context.Context, crontab string, taskName string,
 	}
 }
 
-func (app *Scheduler) requestMiddleware(taskName string, next func(context.Context)) func(context.Context) {
+func (app *scheduler) requestMiddleware(taskName string, next func(context.Context)) func(context.Context) {
 	return func(ctx context.Context) {
 		requestId, _ := uuid.NewV7()
 		ctx = context.WithValue(ctx, "X-Request-ID", requestId.String())
